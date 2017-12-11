@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+  <?!= Include.css(['style']); ?>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ifvisible/1.0.6/ifvisible.min.js"></script>
+</head>
+
+<body>
+  <div class="progress white" id="loader">
+    <div class="indeterminate blue"></div>
+  </div>
+  <div class="row" id="container" style="display:none";>
+    <div class="col s12">
+      <ul class="tabs grey lighten-3">
+        <li class="tab col s6"><a href="#basic">Basic</a></li>
+        <li class="tab col s6"><a href="#adv">Advanced</a></li>
+      </ul>
+    </div>
+    <div id="basic" class="col s12">
+      <form>
+        <div class="row">
+          <div class="col s12">
+            <p>Setup a TAGS collection</p>
+          </div>
+          <div class="input-field col s12">
+            <select id="sheetId" class="settings" required="" aria-required="true">
+            <option value="" disabled selected>Select sheet </option>
+          </select>
+            <label for="sheetId">Set destination sheet</label>
+          </div>
+          <div class="input-field col s12">
+            <input placeholder="#TAGS OR from:mhawksey" id="search_term" type="text" class="validate settings" required="" aria-required="true">
+            <label for="search_term">Search term</label>
+          </div>
+          <div class="input-field col s12">
+            <select id="period" class="settings">
+            <option value="" disabled selected>Limit results to</option>
+            <option value="0">None</option>
+            <option value="1">1 day ago</option>
+            <option value="2">2 days ago</option>
+            <option value="3">3 days ago</option>
+            <option value="4">4 days ago</option>
+            <option value="5">5 days ago</option>
+            <option value="6">6 days ago</option>
+            <option value="7">7 days ago</option>
+          </select>
+            <label for="period">Limit search results</label>
+          </div>
+        </div>
+        <div class="input-field center-align col s12">
+          <button type="submit" id="run_now">Run Now</button>
+          <button class="action" type="submit" id="action">Start Auto-Collect</button>
+        </div>
+      </form>
+    </div>
+    <div id="adv" class="col s12">
+      <ul class="collapsible" data-collapsible="accordion">
+        <li>
+          <div class="collapsible-header"><i class="material-icons">filter_drama</i>First</div>
+          <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+        </li>
+        <li>
+          <div class="collapsible-header"><i class="material-icons">place</i>Second</div>
+          <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+        </li>
+        <li>
+          <div class="collapsible-header"><i class="material-icons">whatshot</i>Third</div>
+          <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <footer class="page-footer blue">
+    <div class="footer-copyright">
+      <div class="container"> Developed by @mhawksey <a class="grey-text text-lighten-4 right" href="https://tags.hawksey.info">Visit Site</a> </div>
+    </div>
+  </footer>
+</body>
+<script>
+  $(function() {
+    poll();
+    var SHEETS = {};
+    var SETTINGS_COUNT = 0;
+
+    getSheets();
+
+    $('.settings').each(function(index) {
+      google.script.run.withSuccessHandler(handleSettings)
+        .getSettings($(this).attr('id'), 'doc', this.type || this.tagName.toLowerCase());
+      SETTINGS_COUNT++;
+
+      // handle on change 
+      $(this).on('input', function() {
+        var setObj = {};
+        setObj[$(this).attr('id')] = $(this).val();
+        google.script.run.storeSettings(setObj, 'doc');
+      })
+    });
+
+    function poll(interval) {
+      interval = interval || 2000;
+      setTimeout(function() {
+        if (ifvisible.now()) {
+          getSheets();
+        }
+        poll();
+      }, interval);
+    };
+
+    function getSheets() {
+      google.script.run.withSuccessHandler(showSheetNames)
+        .getSheetNames(SHEETS);
+    }
+
+    function showSheetNames(sheets) {
+      if (sheets) {
+        $('#sheetId').html('<option value="" disabled selected>Select sheet </option>');
+        sheets.options.forEach(function(s) {
+          $('#sheetId')
+            .append($('<option></option>')
+              .attr('value', s.value)
+              .text(s.text));
+        });
+        $('#sheetId option[value=' + sheets.selected + ']').prop('selected', 'selected');
+        $('select').material_select();
+        SHEETS = sheets;
+      }
+    }
+
+    function handleSettings(setting) {
+      SETTINGS_COUNT--;
+      if (setting.value !== '') {
+        switch (setting.type) {
+          case 'select-one':
+            $('#' + setting.id + ' option[value=' + setting.value + ']').prop('selected', 'selected');
+            $('select').material_select();
+            break;
+          case 'text':
+            $('#' + setting.id).val(setting.value);
+            break;
+        }
+      }
+     if (SETTINGS_COUNT === 0){
+       $('#loader').hide();
+       $('#container').show();
+       $('ul.tabs').tabs();
+     }
+    }
+  });
+</script>
+
+</html>

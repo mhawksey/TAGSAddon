@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+  <?!= Include.css(['style']); ?>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/intercom.js/0.1.4/intercom.min.js"></script>
+</head>
+
+<body>
+
+  <div class="row" id="container" ;>
+    <div class="col s12">
+      <ul class="tabs grey lighten-3">
+        <li class="tab col s6"><a href="#basic">Easy</a></li>
+        <li class="tab col s6"><a href="#adv">Advanced</a></li>
+      </ul>
+    </div>
+    <div id="basic" class="col s12">
+      <div class="col s12">
+        <p><strong>Instructions</strong></p>
+        <p>To access data from Twitter it is required that you sign in with a Twitter account. This is done on via the Twitter website and your connection can be revoked at any time.</p>
+        <p>To connect your account use the button below (an Advanced setup is available if with to use your own Twitter application credentials):</p>
+      </div>
+      <div class="col s12 center-align">
+        <button class="action center-align" type="submit" id="signin" onmouseup="openTab()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
+        <button class="center-align" type="submit" id="signout" onmouseup="disconnect()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
+      </div>
+    </div>
+    <div id="adv" class="col s12">
+      <div class="col s12">
+        <p><strong>Instructions</strong></p>
+        <p>To collect data from Twitter using your own registered application follow the steps below. Registering your application and connecting should be a one time only task.
+        </p>
+        <p><strong>Steps</strong>:</p>
+        <ol style="padding-left: 15px;">
+          <li>Register for an API key with Twitter at <a href="https://dev.twitter.com/apps/new" target="_blank">https://dev.twitter.com/apps/new</a> (if you've already registered for a TAGS sheet you can reuse your existing API Key and Secret).</li>
+          <ul class="browser-default">
+            <li class="browser-default">Name, description and website can be anything you like</li>
+            <li class="browser-default"><strong>Important</strong> Include the Callback URL <code>https://script.google.com/macros/</code></li>
+          </ul>
+          <li>Read the 'Developer Rules of the Road' before clicking 'Create your Twitter application'</li>
+          <li>Enter your Twitter application API key and secret in the form below:</li>
+        </ol>
+      </div>
+
+      <form class="col s12">
+        <div class="input-field col s12">
+          <input id="consumer_key" type="text" class="validate settings" required="" aria-required="true">
+          <label for="consumer_key">Consumer Key</label>
+        </div>
+        <div class="input-field col s12">
+          <input id="consumer_secret" type="text" class="validate settings" required="" aria-required="true">
+          <label for="consumer_secret">Consumer Secret</label>
+        </div>
+        <div class="input-field center-align col s12">
+          <button type="submit" id="cancel">Cancel</button>
+        <button class="action center-align" type="submit" id="custom_signin" onmouseup="openTab()" disabled><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
+        <button class="center-align" type="submit" id="custom_signout" onmouseup="disconnect()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+  <footer class="page-footer blue">
+    <div class="footer-copyright">
+      <div class="container"> Developed by @mhawksey <a class="grey-text text-lighten-4 right" href="https://tags.hawksey.info">Visit Site</a> </div>
+    </div>
+  </footer>
+</body>
+<script>
+  var isSignedIn = '<?= isSignedIn ?>' == 'true';
+  var email = '<?= email ?>';
+  var authUrl = '<?= authUrl ?>';
+
+  window.openTab = function() {
+    $('#signin').prop("disabled", true);
+    window.open(authUrl, target = "_blank");
+  };
+
+  function disconnect() {
+    $('#signout, #custom_signout').prop("disabled", true);
+    google.script.run.withSuccessHandler(function(url) {
+      authUrl = url;
+      $('#signin, #signout, #custom_signout').toggle();
+      $('#signout, #custom_signout').prop('disabled', false);
+    }).signOut()
+  }
+
+  if (isSignedIn) {
+    document.getElementById('signin').style.display = 'none';
+    document.getElementById('signout').style.display = 'inline';
+  } else {
+    document.getElementById('signin').style.display = 'inline';
+    document.getElementById('signout').style.display = 'none';
+  }
+  $(function() {
+    var intercom = Intercom.getInstance();
+    intercom.on('oauthComplete', function(data) {
+      // Make sure the event is for the same Google account.
+      if (data.email === email) {
+        $('#signin').prop("disabled", false);
+        $('#signin, #signout').toggle();
+      }
+    });
+    $('.settings').each(function(index) {
+      google.script.run.withSuccessHandler(handleSettings)
+        .getSettings($(this).attr('id'), 'user', this.type || this.tagName.toLowerCase());
+      //SETTINGS_COUNT++;
+
+      // handle on change 
+      $(this).on('input', function() {
+        var setObj = {};
+        setObj[$(this).attr('id')] = $(this).val();
+        google.script.run.storeSettings(setObj, 'user');
+        
+        if ($('#consumer_key').val()!== "" && $('#consumer_secret').val()!== ""){
+          $('#custom_signin').prop("disabled", false);
+        } else {
+          $('#custom_signin').prop("disabled", true);
+        }
+      })
+    });
+    
+    function handleSettings(setting) {
+      if (setting.value !== '') {
+        switch (setting.type) {
+          case 'select-one':
+            $('#' + setting.id + ' option[value=' + setting.value + ']').prop('selected', 'selected');
+            $('select').material_select();
+            break;
+          case 'text':
+            $('#' + setting.id).val(setting.value);
+            break;
+        }
+        Materialize.updateTextFields();
+        if ($('#consumer_key').val()!== "" && $('#consumer_secret').val()!== ""){
+          $('#custom_signin').prop("disabled", false);
+        }
+      }
+    }
+  });
+</script>
+
+</html>
