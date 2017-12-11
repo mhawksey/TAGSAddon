@@ -1,0 +1,89 @@
+<script>
+  var isSignedIn = '<?= isSignedIn ?>' == 'true';
+  var email = '<?= email ?>';
+  var authUrl = '<?= authUrl ?>';
+
+  window.openTab = function() {
+    $('#signin').prop("disabled", true);
+    window.open(authUrl, target = "_blank");
+  };
+
+  function disconnect() {
+    $('#signout').prop("disabled", true);
+    google.script.run.withSuccessHandler(function(url) {
+      authUrl = url;
+      $('#signin, #signout').toggle();
+      $('#signout').prop('disabled', false);
+    }).signOut()
+  }
+
+  $(function() {
+    $('.tab').click(function(){
+      $('#signin').prop("disabled", false);
+      if ($(this).find("a").attr('href') === '#adv'){
+        // check if key/secret and disable sign in
+        if ($('#consumer_key').val() == "" && $('#consumer_secret').val() == ""){
+          $('#signin').prop("disabled", true);
+        }
+      } 
+      console.log(authUrl);
+    });
+  
+    // listen for auth flow completion
+    var intercom = Intercom.getInstance();
+    intercom.on('oauthComplete', function(data) {
+      // Make sure the event is for the same Google account.
+      if (data.email === email) {
+        $('#signin').prop("disabled", false);
+        $('#signin, #signout').toggle();
+      }
+    });
+    
+    if (isSignedIn) {
+      $('#signin').hide();
+      $('#signout').show();
+    } else {
+      $('#signin').show();
+      $('#signout').hide();
+    }
+    
+    $('.settings').each(function(index) {
+      google.script.run.withSuccessHandler(handleSettings)
+        .getSettings($(this).attr('id'), 'user', this.type || this.tagName.toLowerCase());
+      //SETTINGS_COUNT++;
+
+      // handle on change 
+      $(this).on('input', function() {
+        var setObj = {};
+        setObj[$(this).attr('id')] = $(this).val();
+        google.script.run.storeSettings(setObj, 'user');
+        
+        if ($('#consumer_key').val()!== "" && $('#consumer_secret').val()!== ""){
+          $('#signin').prop("disabled", false);
+          google.script.run.withSuccessHandler(function(r){ if (r) {console.log(r); authUrl = r; } })
+                .getAuthorizationUrl()
+        } else {
+          $('#signin').prop("disabled", true);
+        }
+      })
+    });
+    
+    function handleSettings(setting) {
+      if (setting.value !== '') {
+        switch (setting.type) {
+          case 'select-one':
+            $('#' + setting.id + ' option[value=' + setting.value + ']').prop('selected', 'selected');
+            $('select').material_select();
+            break;
+          case 'text':
+            $('#' + setting.id).val(setting.value);
+            break;
+        }
+        Materialize.updateTextFields();
+        if ($('#consumer_key').val()!== "" && $('#consumer_secret').val()!== ""){
+          $('#signin').prop("disabled", false);
+        }
+      }
+    }
+  });
+</script>

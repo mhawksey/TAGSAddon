@@ -255,7 +255,11 @@ function authCallback(request) {
  * @return {String} The authorization URL.
  */
 function getAuthorizationUrl() {
-  return getTwitterService_().authorize();
+  try {
+    return getTwitterService_().authorize();
+  } catch(e){
+    return false; 
+  }
 }
 
 /**

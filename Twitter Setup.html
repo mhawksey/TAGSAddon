@@ -24,13 +24,10 @@
     <div id="basic" class="col s12">
       <div class="col s12">
         <p><strong>Instructions</strong></p>
-        <p>To access data from Twitter it is required that you sign in with a Twitter account. This is done on via the Twitter website and your connection can be revoked at any time.</p>
-        <p>To connect your account use the button below (an Advanced setup is available if with to use your own Twitter application credentials):</p>
+        <p class="i18n" data-msg="setup_to_access">To access data from Twitter it is required that you sign in with a Twitter account. This is done on via the Twitter website and your connection can be revoked at any time.</p>
+        <p class="i18n" data-msg="setup_to_connect">To connect your account use the button below (an Advanced setup is available if with to use your own Twitter application credentials):</p>
       </div>
-      <div class="col s12 center-align">
-        <button class="action center-align" type="submit" id="signin" onmouseup="openTab()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
-        <button class="center-align" type="submit" id="signout" onmouseup="disconnect()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
-      </div>
+
     </div>
     <div id="adv" class="col s12">
       <div class="col s12">
@@ -58,14 +55,14 @@
           <input id="consumer_secret" type="text" class="validate settings" required="" aria-required="true">
           <label for="consumer_secret">Consumer Secret</label>
         </div>
-        <div class="input-field center-align col s12">
-          <button type="submit" id="cancel">Cancel</button>
-        <button class="action center-align" type="submit" id="custom_signin" onmouseup="openTab()" disabled><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
-        <button class="center-align" type="submit" id="custom_signout" onmouseup="disconnect()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
-        </div>
       </form>
 
     </div>
+          <div class="col s12 center-align">
+<button class="action center-align" type="submit" id="signin" onmouseup="openTab()" ><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
+        <button class="center-align" type="submit" id="signout" onmouseup="disconnect()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
+      </div>
+    
   </div>
   <footer class="page-footer blue">
     <div class="footer-copyright">
@@ -73,78 +70,6 @@
     </div>
   </footer>
 </body>
-<script>
-  var isSignedIn = '<?= isSignedIn ?>' == 'true';
-  var email = '<?= email ?>';
-  var authUrl = '<?= authUrl ?>';
-
-  window.openTab = function() {
-    $('#signin').prop("disabled", true);
-    window.open(authUrl, target = "_blank");
-  };
-
-  function disconnect() {
-    $('#signout, #custom_signout').prop("disabled", true);
-    google.script.run.withSuccessHandler(function(url) {
-      authUrl = url;
-      $('#signin, #signout, #custom_signout').toggle();
-      $('#signout, #custom_signout').prop('disabled', false);
-    }).signOut()
-  }
-
-  if (isSignedIn) {
-    document.getElementById('signin').style.display = 'none';
-    document.getElementById('signout').style.display = 'inline';
-  } else {
-    document.getElementById('signin').style.display = 'inline';
-    document.getElementById('signout').style.display = 'none';
-  }
-  $(function() {
-    var intercom = Intercom.getInstance();
-    intercom.on('oauthComplete', function(data) {
-      // Make sure the event is for the same Google account.
-      if (data.email === email) {
-        $('#signin').prop("disabled", false);
-        $('#signin, #signout').toggle();
-      }
-    });
-    $('.settings').each(function(index) {
-      google.script.run.withSuccessHandler(handleSettings)
-        .getSettings($(this).attr('id'), 'user', this.type || this.tagName.toLowerCase());
-      //SETTINGS_COUNT++;
-
-      // handle on change 
-      $(this).on('input', function() {
-        var setObj = {};
-        setObj[$(this).attr('id')] = $(this).val();
-        google.script.run.storeSettings(setObj, 'user');
-        
-        if ($('#consumer_key').val()!== "" && $('#consumer_secret').val()!== ""){
-          $('#custom_signin').prop("disabled", false);
-        } else {
-          $('#custom_signin').prop("disabled", true);
-        }
-      })
-    });
-    
-    function handleSettings(setting) {
-      if (setting.value !== '') {
-        switch (setting.type) {
-          case 'select-one':
-            $('#' + setting.id + ' option[value=' + setting.value + ']').prop('selected', 'selected');
-            $('select').material_select();
-            break;
-          case 'text':
-            $('#' + setting.id).val(setting.value);
-            break;
-        }
-        Materialize.updateTextFields();
-        if ($('#consumer_key').val()!== "" && $('#consumer_secret').val()!== ""){
-          $('#custom_signin').prop("disabled", false);
-        }
-      }
-    }
-  });
-</script>
-
+<?!= Include.gs(['i18n','helpers']); ?>
+<?!= Include.js(['i18n','twitter-setup']); ?>
 </html>
