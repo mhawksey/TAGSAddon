@@ -13,64 +13,68 @@
 </head>
 
 <body>
-  <div class="progress white" id="loader">
-    <div class="indeterminate blue"></div>
+  <div class="row progress white" id="loader">
+    <div class="col s12 indeterminate blue"></div>
   </div>
-  <div class="col s12" id="container" style="display:none";>
-    <div class="row">
+  <div class="row" id="container" style="display:none" ;>
+    <div class="col s12">
       <ul class="tabs grey lighten-3">
         <li class="tab col s6"><a href="#basic">Basic</a></li>
         <li class="tab col s6"><a href="#adv">Advanced</a></li>
       </ul>
     </div>
-    <div id="basic">
-      <form>
-        <div>
+    <div id="basic" class="col s12">
+      <div class="row">
+        <form class="col s12">
           <div class="row">
-            <p>Setup a TAGS collection</p>
-          </div>
-          <div class="input-field row">
-            <select id="sheetId" class="settings" required="" aria-required="true">
+            <div class="col s12">
+              <p>Setup a TAGS collection</p>
+            </div>
+            <div class="input-field col s12">
+              <select id="sheetId" class="settings" required="" aria-required="true">
             <option value="" disabled selected>Select sheet </option>
           </select>
-            <label for="sheetId">Set destination sheet</label>
+              <label for="sheetId">Set destination sheet</label>
+            </div>
+            <div class="input-field col s12">
+              <input placeholder="#TAGS OR from:mhawksey" id="search_term" type="text" class="validate settings" required="" aria-required="true">
+              <label for="search_term">Search term</label>
+            </div>
+
+            <ul class="collapsible" data-collapsible="accordion">
+              <li>
+                <div class="collapsible-header">Limit collection results (Search only)<i class="material-icons right">keyboard_arrow_down</i></div>
+                <div class="collapsible-body row">
+                  <div class="input-field col s12">
+                    <input type="range" id="volume" min="0" max="18000" value="3000" step="100" />
+                    <label for="volume" class="active">Volume per collection</label>
+                  </div>
+                  <div class="input-field row">
+                    <select id="period" class="settings">
+                      <option value="" disabled selected>Limit results to</option>
+                      <option value="0">None</option>
+                      <option value="1">1 day ago</option>
+                      <option value="2">2 days ago</option>
+                      <option value="3">3 days ago</option>
+                      <option value="4">4 days ago</option>
+                      <option value="5">5 days ago</option>
+                      <option value="6">6 days ago</option>
+                      <option value="7">7 days ago</option>
+                    </select>
+                    <label for="period">Days</label>
+                  </div>
+                </div>
+              </li>
+            </ul>
+
+
           </div>
-          <div class="input-field row">
-            <input placeholder="#TAGS OR from:mhawksey" id="search_term" type="text" class="validate settings" required="" aria-required="true">
-            <label for="search_term">Search term</label>
+          <div class="input-field center-align row">
+            <button type="submit" id="run_now">Run Now</button>
+            <button class="action" type="submit" id="action">Start Auto-Collect</button>
           </div>
-          
-          <ul class="collapsible" data-collapsible="accordion">
-        <li>
-          <div class="collapsible-header">Limit collection results (Search only)<i class="material-icons right">keyboard_arrow_down</i></div>
-          <div class="collapsible-body"><div class="input-field col s12">
-            <input type="range" id="volume" min="0" max="18000" value="3000" step="100"/>
-            <label for="volume" class="active">Volume per collection</label>
-          </div>
-          <div class="input-field row">
-            <select id="period" class="settings">
-            <option value="" disabled selected>Limit results to</option>
-            <option value="0">None</option>
-            <option value="1">1 day ago</option>
-            <option value="2">2 days ago</option>
-            <option value="3">3 days ago</option>
-            <option value="4">4 days ago</option>
-            <option value="5">5 days ago</option>
-            <option value="6">6 days ago</option>
-            <option value="7">7 days ago</option>
-          </select>
-            <label for="period">Days</label>
-          </div></div>
-        </li>
-        </ul>
-          
-          
-        </div>
-        <div class="input-field center-align row">
-          <button type="submit" id="run_now">Run Now</button>
-          <button class="action" type="submit" id="action">Start Auto-Collect</button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
     <div id="adv" class="row">
       <ul class="collapsible" data-collapsible="accordion">
@@ -96,5 +100,6 @@
   </footer>
 </body>
 <?!= Include.gs(['i18n','helpers']); ?>
-<?!= Include.js(['collection']); ?>
+  <?!= Include.js(['collection']); ?>
+
 </html>
