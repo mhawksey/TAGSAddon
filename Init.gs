@@ -2,6 +2,7 @@
  * @OnlyCurrentDoc
  */
 
+var LANG = 'en'
 
 /**
  * Adds a custom menu with items to show the sidebar and dialog.
@@ -9,11 +10,14 @@
  * @param {Object} e The event parameter for a simple onOpen trigger.
  */
 function onOpen(e) {
-  SpreadsheetApp.getUi()
+  var service = getTwitterService_();
+  var menu = SpreadsheetApp.getUi()
       .createAddonMenu()
-      .addItem('Setup Twitter', 'showSidebarSetup')
-      .addItem('Start collection', 'showSidebarCollection')
-      .addToUi();
+      .addItem(script.i18n.getMessage('Setup Twitter', LANG), 'showSidebarSetup');
+  if (service.hasAccess()){
+      menu.addItem(script.i18n.getMessage('Start Collection', LANG), 'showSidebarCollection');
+  }
+  menu.addToUi();
 }
 
 /**

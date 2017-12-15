@@ -1,0 +1,39 @@
+<script>
+  $(function() {
+    poll();
+    var SHEETS = {};
+    script.settingsSave('doc', 'collect');
+
+    getSheets();
+
+    function poll(interval) {
+      interval = interval || 2000;
+      setTimeout(function() {
+        if (ifvisible.now()) {
+          getSheets();
+        }
+        poll();
+      }, interval);
+    };
+
+    function getSheets() {
+      google.script.run.withSuccessHandler(showSheetNames)
+        .getSheetNames(SHEETS);
+    }
+
+    function showSheetNames(sheets) {
+      if (sheets) {
+        $('#sheetId').html('<option value="" disabled selected>Select sheet </option>');
+        sheets.options.forEach(function(s) {
+          $('#sheetId')
+            .append($('<option></option>')
+              .attr('value', s.value)
+              .text(s.text));
+        });
+        $('#sheetId option[value=' + sheets.selected + ']').prop('selected', 'selected');
+        $('select').material_select();
+        SHEETS = sheets;
+      }
+    }
+  });
+</script>

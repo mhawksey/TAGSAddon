@@ -24,7 +24,7 @@ footer {
 }
 
 #adv.col, #container>.col {
-  padding: 0;
+  /*padding: 0;*/
 }
 
 .tabs .indicator {
@@ -47,9 +47,14 @@ footer {
 }
 
 .collapsible {
-  border: none;
   webkit-box-shadow: none;
   box-shadow: none;
+}
+.collapsible-body {
+padding:0px;
+}
+.fullwidth{
+padding: 0;
 }
 
 /* label color */
@@ -89,6 +94,23 @@ footer {
 .input-field .prefix.active {
   color: #000;
 }
+
+/* Slider colours */
+  input[type=range]::-webkit-slider-thumb {
+    background-color: #4285f4;
+  }
+  input[type=range]::-moz-range-thumb {
+    background-color: #4285f4;
+  }
+  input[type=range]::-ms-thumb {
+    background-color: #4285f4;
+  }
+
+  /***** These are to edit the thumb and the text inside the thumb *****/
+  input[type=range] + .thumb {
+    background-color: #4285f4;
+  }
+
 
 /* Select list colour */
 .dropdown-content li {

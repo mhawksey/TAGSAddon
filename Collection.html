@@ -16,30 +16,38 @@
   <div class="progress white" id="loader">
     <div class="indeterminate blue"></div>
   </div>
-  <div class="row" id="container" style="display:none";>
-    <div class="col s12">
+  <div class="col s12" id="container" style="display:none";>
+    <div class="row">
       <ul class="tabs grey lighten-3">
         <li class="tab col s6"><a href="#basic">Basic</a></li>
         <li class="tab col s6"><a href="#adv">Advanced</a></li>
       </ul>
     </div>
-    <div id="basic" class="col s12">
+    <div id="basic">
       <form>
-        <div class="row">
-          <div class="col s12">
+        <div>
+          <div class="row">
             <p>Setup a TAGS collection</p>
           </div>
-          <div class="input-field col s12">
+          <div class="input-field row">
             <select id="sheetId" class="settings" required="" aria-required="true">
             <option value="" disabled selected>Select sheet </option>
           </select>
             <label for="sheetId">Set destination sheet</label>
           </div>
-          <div class="input-field col s12">
+          <div class="input-field row">
             <input placeholder="#TAGS OR from:mhawksey" id="search_term" type="text" class="validate settings" required="" aria-required="true">
             <label for="search_term">Search term</label>
           </div>
-          <div class="input-field col s12">
+          
+          <ul class="collapsible" data-collapsible="accordion">
+        <li>
+          <div class="collapsible-header">Limit collection results (Search only)<i class="material-icons right">keyboard_arrow_down</i></div>
+          <div class="collapsible-body"><div class="input-field col s12">
+            <input type="range" id="volume" min="0" max="18000" value="3000" step="100"/>
+            <label for="volume" class="active">Volume per collection</label>
+          </div>
+          <div class="input-field row">
             <select id="period" class="settings">
             <option value="" disabled selected>Limit results to</option>
             <option value="0">None</option>
@@ -51,16 +59,20 @@
             <option value="6">6 days ago</option>
             <option value="7">7 days ago</option>
           </select>
-            <label for="period">Limit search results</label>
-          </div>
+            <label for="period">Days</label>
+          </div></div>
+        </li>
+        </ul>
+          
+          
         </div>
-        <div class="input-field center-align col s12">
+        <div class="input-field center-align row">
           <button type="submit" id="run_now">Run Now</button>
           <button class="action" type="submit" id="action">Start Auto-Collect</button>
         </div>
       </form>
     </div>
-    <div id="adv" class="col s12">
+    <div id="adv" class="row">
       <ul class="collapsible" data-collapsible="accordion">
         <li>
           <div class="collapsible-header"><i class="material-icons">filter_drama</i>First</div>
@@ -83,77 +95,6 @@
     </div>
   </footer>
 </body>
-<script>
-  $(function() {
-    poll();
-    var SHEETS = {};
-    var SETTINGS_COUNT = 0;
-
-    getSheets();
-
-    $('.settings').each(function(index) {
-      google.script.run.withSuccessHandler(handleSettings)
-        .getSettings($(this).attr('id'), 'doc', this.type || this.tagName.toLowerCase());
-      SETTINGS_COUNT++;
-
-      // handle on change 
-      $(this).on('input', function() {
-        var setObj = {};
-        setObj[$(this).attr('id')] = $(this).val();
-        google.script.run.storeSettings(setObj, 'doc');
-      })
-    });
-
-    function poll(interval) {
-      interval = interval || 2000;
-      setTimeout(function() {
-        if (ifvisible.now()) {
-          getSheets();
-        }
-        poll();
-      }, interval);
-    };
-
-    function getSheets() {
-      google.script.run.withSuccessHandler(showSheetNames)
-        .getSheetNames(SHEETS);
-    }
-
-    function showSheetNames(sheets) {
-      if (sheets) {
-        $('#sheetId').html('<option value="" disabled selected>Select sheet </option>');
-        sheets.options.forEach(function(s) {
-          $('#sheetId')
-            .append($('<option></option>')
-              .attr('value', s.value)
-              .text(s.text));
-        });
-        $('#sheetId option[value=' + sheets.selected + ']').prop('selected', 'selected');
-        $('select').material_select();
-        SHEETS = sheets;
-      }
-    }
-
-    function handleSettings(setting) {
-      SETTINGS_COUNT--;
-      if (setting.value !== '') {
-        switch (setting.type) {
-          case 'select-one':
-            $('#' + setting.id + ' option[value=' + setting.value + ']').prop('selected', 'selected');
-            $('select').material_select();
-            break;
-          case 'text':
-            $('#' + setting.id).val(setting.value);
-            break;
-        }
-      }
-     if (SETTINGS_COUNT === 0){
-       $('#loader').hide();
-       $('#container').show();
-       $('ul.tabs').tabs();
-     }
-    }
-  });
-</script>
-
+<?!= Include.gs(['i18n','helpers']); ?>
+<?!= Include.js(['collection']); ?>
 </html>

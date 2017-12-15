@@ -1,4 +1,10 @@
 var i18n = {
+  "Setup Twitter": {
+    "en": "Setup Twitter"
+  },
+  "Start Collection": {
+    "en": "Start Collection"
+  },
   "setup_to_access": {
     "en": "To access data from Twitter it is required that you sign in with a Twitter account. This is done on via the Twitter website and your connection can be revoked at any time."
   },

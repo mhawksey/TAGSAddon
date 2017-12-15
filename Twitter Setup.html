@@ -13,8 +13,10 @@
 </head>
 
 <body>
-
-  <div class="row" id="container" ;>
+  <div class="progress white" id="loader">
+    <div class="indeterminate blue"></div>
+  </div>
+  <div class="row" id="container" style="display:none">
     <div class="col s12">
       <ul class="tabs grey lighten-3">
         <li class="tab col s6"><a href="#basic">Easy</a></li>
@@ -59,8 +61,8 @@
 
     </div>
           <div class="col s12 center-align">
-<button class="action center-align" type="submit" id="signin" onmouseup="openTab()" ><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
-        <button class="center-align" type="submit" id="signout" onmouseup="disconnect()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
+            <button class="action center-align" type="submit" id="signin" onmouseup="openTab()" ><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
+            <button class="center-align" type="submit" id="signout" onmouseup="disconnect()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
       </div>
     
   </div>
@@ -70,6 +72,11 @@
     </div>
   </footer>
 </body>
+<script>
+  var isSignedIn = '<?= isSignedIn ?>' == 'true';
+  var email = '<?= email ?>';
+  var authUrl = '<?= authUrl ?>';
+</script>
 <?!= Include.gs(['i18n','helpers']); ?>
-<?!= Include.js(['i18n','twitter-setup']); ?>
+<?!= Include.js(['twitter-setup']); ?>
 </html>
