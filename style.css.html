@@ -1,5 +1,10 @@
 body{
   margin-bottom:45px;
+    line-height: 1.5;
+    font-family: "Roboto", sans-serif;
+    font-weight: normal;
+    color: rgba(0,0,0,0.87);
+
   }
 strong {
     font-weight: bold;
@@ -13,7 +18,14 @@ footer {
   bottom: 0px;
   width: 100%;
 }
-
+#loader{
+    position: absolute;
+    top: 0px;
+    z-index: 999;
+}
+.progress {
+margin-top:0;
+}
 .page-footer {
   padding-top: 0;
 }
@@ -24,7 +36,7 @@ footer {
 }
 
 #adv.col, #container>.col {
-  /*padding: 0;*/
+  padding: 0;
 }
 
 .tabs .indicator {
@@ -33,7 +45,8 @@ footer {
 
 .tabs, .tabs .tab {
   height: 41px;
-  line-height: 41px
+  line-height: 41px;
+      margin-bottom: 15px;
 }
 
 .tabs .tab a {
@@ -50,20 +63,49 @@ footer {
   webkit-box-shadow: none;
   box-shadow: none;
 }
+.collapsible i {
+margin: 0;
+}
+.collapsible-header{
+display:block;
+color: rgba(0, 0, 0, 0.54);
+}
+.collapsible-header.active{
+color: inherit;
+}
+.collapsible li i{
+    -webkit-transition: all 250ms cubic-bezier(0.4,0.0,0.2,1);
+    -moz-transition: all 250ms cubic-bezier(0.4,0.0,0.2,1);
+    -o-transition: all 250ms cubic-bezier(0.4,0.0,0.2,1);
+    transition: all 250ms cubic-bezier(0.4,0.0,0.2,1);
+    }
+
+.collapsible li.active i {
+  -ms-transform: rotate(-180deg);
+  -webkit-transform: rotate(-180deg); 
+  transform: rotate(-180deg);
+}
 .collapsible-body {
 padding:0px;
+    margin-bottom: 0px;
 }
-.fullwidth{
-padding: 0;
+.collapsible.col.s12 {
+    padding: 0px;
+    border-left: none;
+    border-right: none;
 }
 
 /* label color */
-.input-field label {
+label {
   color: #616161 !important;
+}
+label[for=columns]{
+    top: -23px;
+    font-size: 11px;
 }
 
 /* label underline color */
-.input-field input[type=text] {
+.input-field input[type=text], .input-field input[type=search]  {
   border-bottom: 1px solid #ccc !important;
 }
 
@@ -73,7 +115,7 @@ padding: 0;
 }
 
 /* label underline focus color */
-.input-field input[type=text]:focus, .input-field input[type=text].valid:focus {
+.input-field input[type=text]:focus, .input-field input[type=text].valid:focus, .input-field input[type=search]:focus, .input-field input[type=search].valid:focus {
   border-bottom: 1px solid #4285f4 !important;
   box-shadow: 0 1px 0 0 #4285f4 !important;
 }

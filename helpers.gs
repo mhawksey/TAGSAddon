@@ -32,7 +32,7 @@ script.settingsSave = function(type, context) {
       SETTINGS_COUNT++;
 
       // handle on change 
-      $(this).on('input', function() {
+      $(this).on('input, change', function() {
         var setObj = {};
         setObj[$(this).attr('id')] = $(this).val();
         google.script.run.storeSettings(setObj, type);
@@ -69,6 +69,9 @@ script.handleSettings = function(setting) {
         $('select').material_select();
         break;
       case 'text':
+        $('#' + setting.id).val(setting.value);
+        break;
+      case 'range':
         $('#' + setting.id).val(setting.value);
         break;
     }

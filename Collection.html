@@ -6,14 +6,17 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-  <?!= Include.css(['style']); ?>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ifvisible/1.0.6/ifvisible.min.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ifvisible/1.0.6/ifvisible.min.js"></script>
+    
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+  <?!= Include.css(['style','select2-materialize']); ?>
 </head>
 
 <body>
-  <div class="row progress white" id="loader">
+  <div class="row progress transparent" id="loader">
     <div class="col s12 indeterminate blue"></div>
   </div>
   <div class="row" id="container" style="display:none" ;>
@@ -25,31 +28,32 @@
     </div>
     <div id="basic" class="col s12">
       <div class="row">
-        <form class="col s12">
+        <form id="basic_settings">
           <div class="row">
-            <div class="col s12">
-              <p>Setup a TAGS collection</p>
-            </div>
             <div class="input-field col s12">
               <select id="sheetId" class="settings" required="" aria-required="true">
             <option value="" disabled selected>Select sheet </option>
           </select>
-              <label for="sheetId">Set destination sheet</label>
+              <label for="sheetId" data-error="A destination sheet is required">Set destination sheet</label>
             </div>
             <div class="input-field col s12">
               <input placeholder="#TAGS OR from:mhawksey" id="search_term" type="text" class="validate settings" required="" aria-required="true">
-              <label for="search_term">Search term</label>
+              <label for="search_term" data-error="A search term is required">Search term</label>
             </div>
-
-            <ul class="collapsible" data-collapsible="accordion">
+<div class="row">
+            <ul class="collapsible col s12" data-collapsible="accordion">
               <li>
-                <div class="collapsible-header">Limit collection results (Search only)<i class="material-icons right">keyboard_arrow_down</i></div>
+                <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Limit Collection</div>
                 <div class="collapsible-body row">
+   
+         
+            <div class="col s12">
+               <label for="volume">Max. number of tweets per collection</label>
+               <p class="range-field">
+                  <input type="range" id="volume" min="0" max="18000" step="100" class="settings" value="3000"/>
+               </p>
+            </div>            
                   <div class="input-field col s12">
-                    <input type="range" id="volume" min="0" max="18000" value="3000" step="100" />
-                    <label for="volume" class="active">Volume per collection</label>
-                  </div>
-                  <div class="input-field row">
                     <select id="period" class="settings">
                       <option value="" disabled selected>Limit results to</option>
                       <option value="0">None</option>
@@ -65,18 +69,39 @@
                   </div>
                 </div>
               </li>
-            </ul>
+              <li>
+                <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Data Columns</div>
+                <div class="collapsible-body row">
+<div class="input-field col s12">
+<label for="columns">Select data columns</label>
+<select class="js-example-basic-multiple" multiple="multiple" id="columns">
 
+</select>
+<div></div>
+</div>
+                </div>
+              </li>
+              <li>
+                <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Advanced Parameters</div>
+                <div class="collapsible-body row">
+                     <div class="input-field col s12">
+                       <input placeholder="{'geocode': '40.714353,-74.005973,30mi'}" id="adv_params" type="text" class="settings">
+                       <label for="adv_params">Advanced parameters</label>
+                     </div>
+                </div>
+              </li>
+            </ul>
+</div>
 
           </div>
           <div class="input-field center-align row">
-            <button type="submit" id="run_now">Run Now</button>
-            <button class="action" type="submit" id="action">Start Auto-Collect</button>
+            <button type="submit" id="run_now_basic">Run Now</button>
+            <button class="action" type="submit" id="run_auto">Start Auto-Collect</button>
           </div>
         </form>
       </div>
     </div>
-    <div id="adv" class="row">
+    <div id="adv" class="col s12">
       <ul class="collapsible" data-collapsible="accordion">
         <li>
           <div class="collapsible-header"><i class="material-icons">filter_drama</i>First</div>
@@ -99,7 +124,7 @@
     </div>
   </footer>
 </body>
-<?!= Include.gs(['i18n','helpers']); ?>
+<?!= Include.gs(['i18n','helpers','columns']); ?>
   <?!= Include.js(['collection']); ?>
 
 </html>

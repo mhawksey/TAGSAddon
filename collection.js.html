@@ -5,6 +5,10 @@
     script.settingsSave('doc', 'collect');
 
     getSheets();
+    
+    $('.js-example-basic-multiple').select2({
+      data: COLS['search/tweets']
+    });
 
     function poll(interval) {
       interval = interval || 2000;
@@ -34,6 +38,24 @@
         $('select').material_select();
         SHEETS = sheets;
       }
+    }
+    $('#basic_settings').on('submit', function(e) { 
+      e.preventDefault();  //prevent form from submitting
+      $('[id^=run_]').prop("disabled", true);
+      $('#loader').show();
+      google.script.run.withSuccessHandler(collectionResults)
+        .collectionRun();
+
+    });
+    
+    function collectionResults(result){
+      if (result === 'yes'){
+      google.script.run.withSuccessHandler(collectionResults)
+        .collectionRun({import:true});
+      }
+      console.log(result);
+      $('[id^=run_]').prop("disabled", false);
+      $('#loader').hide();
     }
   });
 </script>

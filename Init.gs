@@ -2,7 +2,7 @@
  * @OnlyCurrentDoc
  */
 
-var LANG = 'en'
+var LANG = 'en';
 
 /**
  * Adds a custom menu with items to show the sidebar and dialog.
@@ -13,11 +13,12 @@ function onOpen(e) {
   var service = getTwitterService_();
   var menu = SpreadsheetApp.getUi()
       .createAddonMenu()
-      .addItem(script.i18n.getMessage('Setup Twitter', LANG), 'showSidebarSetup');
+      .addItem(script.i18n.getMessage('Setup Twitter Access', LANG), 'showSidebarSetup');
   if (service.hasAccess()){
-      menu.addItem(script.i18n.getMessage('Start Collection', LANG), 'showSidebarCollection');
+      menu.addItem(script.i18n.getMessage('Create Collection', LANG), 'showSidebarCollection');
   }
   menu.addToUi();
+  
 }
 
 /**
@@ -127,6 +128,9 @@ function getSettings(key, type, fieldType){
 function storeDocProp_(key, value){
   PropertiesService.getDocumentProperties().setProperty(key, value);
   CacheService.getDocumentCache().put(key, value, 86400);
+  CacheService.getDocumentCache().put('ALL', 
+                                      JSON.stringify(PropertiesService.getDocumentProperties().getProperties()), 
+                                      86400);
 }
 
 /**
@@ -149,6 +153,18 @@ function getDocProp_(key){
   if (!value){
     var value = PropertiesService.getDocumentProperties().getProperty(key);
     CacheService.getDocumentCache().put(key, value, 86400);
+  }
+  return value;
+}
+/**
+ * Gets all static document properties, using caching.
+ * @returns {Object} The property values.
+ */
+function getDocProps_(){
+  var value = JSON.parse(CacheService.getDocumentCache().get('ALL'));
+  if (!value){
+    var value = PropertiesService.getDocumentProperties().getProperties();
+    CacheService.getDocumentCache().put('ALL', JSON.stringify(value), 86400);
   }
   return value;
 }
