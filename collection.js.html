@@ -2,13 +2,26 @@
   $(function() {
     poll();
     var SHEETS = {};
+    var DEFAULT_COLS = [];
     script.settingsSave('doc', 'collect');
 
     getSheets();
+    $.map(COLS['search/tweets'], function (grp) {
+      $.map(grp.children, function (obj){
+      obj.text = obj.id;
+      if (use_defaults && obj.is_default){
+        obj.selected = true;
+      } else if (obj.is_default){
+        DEFAULT_COLS.push(obj.id);
+      }
+      });
+     
+      });
     
-    $('.js-example-basic-multiple').select2({
+    $('#columns').select2({
       data: COLS['search/tweets']
     });
+    
 
     function poll(interval) {
       interval = interval || 2000;
@@ -39,6 +52,8 @@
         SHEETS = sheets;
       }
     }
+    
+    // Event Handlers
     $('#basic_settings').on('submit', function(e) { 
       e.preventDefault();  //prevent form from submitting
       $('[id^=run_]').prop("disabled", true);
@@ -46,6 +61,10 @@
       google.script.run.withSuccessHandler(collectionResults)
         .collectionRun();
 
+    });
+    
+    $('#columns_reset').on('click', function(){
+      $('#columns').val(DEFAULT_COLS).trigger("change");
     });
     
     function collectionResults(result){

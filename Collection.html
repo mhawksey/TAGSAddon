@@ -31,9 +31,9 @@
         <form id="basic_settings">
           <div class="row">
             <div class="input-field col s12">
-              <select id="sheetId" class="settings" required="" aria-required="true">
-            <option value="" disabled selected>Select sheet </option>
-          </select>
+              <select id="sheetId" name="sheetId" class="validate settings" required="" aria-required="true">
+                <option value="" disabled selected>Select sheet </option>
+              </select>
               <label for="sheetId" data-error="A destination sheet is required">Set destination sheet</label>
             </div>
             <div class="input-field col s12">
@@ -48,9 +48,9 @@
    
          
             <div class="col s12">
-               <label for="volume">Max. number of tweets per collection</label>
+               <label for="numberOfTweets">Max. number of tweets per collection</label>
                <p class="range-field">
-                  <input type="range" id="volume" min="0" max="18000" step="100" class="settings" value="3000"/>
+                  <input type="range" id="numberOfTweets" min="0" max="18000" step="100" class="settings" value="3000"/>
                </p>
             </div>            
                   <div class="input-field col s12">
@@ -73,11 +73,11 @@
                 <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Data Columns</div>
                 <div class="collapsible-body row">
 <div class="input-field col s12">
-<label for="columns">Select data columns</label>
-<select class="js-example-basic-multiple" multiple="multiple" id="columns">
+<label for="columns">Select data columns </label> <div id="columns_reset">(<a>defaults</a>)</div>
+<select multiple="multiple" id="columns" class="settings">
 
 </select>
-<div></div>
+<p><em>Note: New columns added after collection has started will not be populated with data. <code>id_str</code> is a required column and is added automatically</em></p>
 </div>
                 </div>
               </li>
@@ -124,7 +124,10 @@
     </div>
   </footer>
 </body>
-<?!= Include.gs(['i18n','helpers','columns']); ?>
+<script>
+  var use_defaults = '<?= use_defaults ?>' == 'true';
+</script>
+<?!= Include.gs(['i18n','helpers','Columns']); ?>
   <?!= Include.js(['collection']); ?>
 
 </html>

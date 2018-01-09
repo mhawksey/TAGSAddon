@@ -11,12 +11,14 @@ var LANG = 'en';
  */
 function onOpen(e) {
   var service = getTwitterService_();
-  var menu = SpreadsheetApp.getUi()
-      .createAddonMenu()
+  var ui = SpreadsheetApp.getUi();
+  var menu = ui.createAddonMenu()
       .addItem(script.i18n.getMessage('Setup Twitter Access', LANG), 'showSidebarSetup');
   if (service.hasAccess()){
       menu.addItem(script.i18n.getMessage('Create Collection', LANG), 'showSidebarCollection');
   }
+  menu.addSubMenu(ui.createMenu('Utilities')
+          .addItem('Wipe Sheet', 'wipeArchive'))
   menu.addToUi();
   
 }
@@ -48,6 +50,7 @@ function showSidebarCollection() {
 
 function showSidebar_(pageName) {
   var service = getTwitterService_();
+  var setting = getDocProps_();
   var template = HtmlService.createTemplateFromFile(pageName);
   template.email = Session.getEffectiveUser().getEmail();
   template.isSignedIn = service.hasAccess();
@@ -56,11 +59,14 @@ function showSidebar_(pageName) {
   } else {
     template.authUrl = "";
   }
+  template.use_defaults = (!setting.metadataId) ? true : false;
   var page = template.evaluate()
       .setTitle('TAGS - '+pageName)
       .setSandboxMode(HtmlService.SandboxMode.IFRAME);
   SpreadsheetApp.getUi().showSidebar(page);
 }
+
+
 
 /**
  * Return sheet names to the sidebar. 
