@@ -29,7 +29,7 @@ width: 100%;
 }
 
 #loader {
-position: absolute;
+position: fixed;
 top: 0px;
 z-index: 999;
 }
@@ -207,5 +207,52 @@ line-height: 1rem;
 
 #signout img {
 filter: brightness(0%);
+}
 
+#show_auto_timer {
+min-width:0px;
+width:35px;
+margin-left:4px
+}
+#show_auto_timer i {
+font-size:18px;
+vertical-align: top
+}
+
+/* Date Time Picker Edits */
+.picker {
+font-size: 13px;
+}
+.picker__weekday-display, .picker__month-display, .picker__day-display {
+font-size: 2rem;
+}
+.picker__date-display {
+text-align: left;
+background-color: #4285f4;
+}
+.picker__close, .picker__today, .picker__clear {
+font-size: 1rem;
+padding: 0 1rem;
+color: #4285f4;
+}
+.picker__day--selected, .picker__day--selected:hover, .picker--focused .picker__day--selected {
+background-color: #4285f4;
+}
+.picker__day.picker__day--today {
+color: #4285f4;
+}
+.picker__table {
+font-size: 0.9rem;
+}
+.picker__nav--prev:hover, .picker__nav--next:hover{
+background: initial;
+}
+.clockpicker-canvas line {
+stroke: #4285f4;
+}
+.clockpicker-canvas-bg, .clockpicker-canvas-bearing {
+fill: #4285f4;
+}
+.clockpicker-tick.active, .clockpicker-tick:hover {
+    background-color: rgba(66, 133, 244, 0.25);
 }

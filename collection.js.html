@@ -6,22 +6,43 @@
     script.settingsSave('doc', 'collect');
 
     getSheets();
-    $.map(COLS['search/tweets'], function (grp) {
-      $.map(grp.children, function (obj){
-      obj.text = obj.id;
-      if (use_defaults && obj.is_default){
-        obj.selected = true;
-      } else if (obj.is_default){
-        DEFAULT_COLS.push(obj.id);
-      }
+    $.map(COLS['search/tweets'], function(grp) {
+      $.map(grp.children, function(obj) {
+        obj.text = obj.id;
+        if (use_defaults && obj.is_default) {
+          obj.selected = true;
+        } else if (obj.is_default) {
+          DEFAULT_COLS.push(obj.id);
+        }
       });
-     
-      });
-    
+
+    });
+
     $('#columns').select2({
       data: COLS['search/tweets']
     });
     
+    $('.datepicker').pickadate({
+      selectMonths: true, // Creates a dropdown to control month
+      selectYears: 15, // Creates a dropdown of 15 years to control year,
+      today: false,
+      clear: 'Clear',
+      close: 'Ok',
+      closeOnSelect: false // Close upon selecting a date,
+    });
+    
+    $('.timepicker').pickatime({
+      default: 'now', // Set default time: 'now', '1:30AM', '16:30'
+      fromnow: 0, // set default time to * milliseconds from now (using with default = 'now')
+      twelvehour: false, // Use AM/PM or 24-hour format
+      donetext: 'OK', // text for done-button
+      cleartext: 'Clear', // text for clear-button
+      canceltext: 'Cancel', // Text for cancel-button
+      autoclose: false, // automatic close timepicker
+      ampmclickable: true, // make AM PM clickable
+      aftershow: function() {} //Function for after opening timepicker
+    });
+
 
     function poll(interval) {
       interval = interval || 2000;
@@ -52,29 +73,73 @@
         SHEETS = sheets;
       }
     }
-    
+
     // Event Handlers
-    $('#basic_settings').on('submit', function(e) { 
-      e.preventDefault();  //prevent form from submitting
+    $('[id^=run_]').on('click', function(e) {
+      e.preventDefault(); //prevent form from submitting
+      var type = $(e.currentTarget).prop("id");
       $('[id^=run_]').prop("disabled", true);
       $('#loader').show();
-      google.script.run.withSuccessHandler(collectionResults)
-        .collectionRun();
+      progressPolling();
+      if (type === 'run_auto'){
+        google.script.run.withSuccessHandler(collectionResults)
+            .autoCollectSetup();
+      } else { 
+        google.script.run.withSuccessHandler(collectionResults)
+          .collectionRun({mode: type});
+      }
+
 
     });
-    
-    $('#columns_reset').on('click', function(){
+
+    $('#columns_reset').on('click', function() {
       $('#columns').val(DEFAULT_COLS).trigger("change");
     });
-    
-    function collectionResults(result){
-      if (result === 'yes'){
-      google.script.run.withSuccessHandler(collectionResults)
-        .collectionRun({import:true});
+
+    function collectionResults(result) {
+      if (result.status === 'import') {
+        result.import = true;
+        result.status = 'importing';
+        progressPolling();
+        google.script.run.withSuccessHandler(collectionResults)
+          .collectionRun(result);
+
       }
       console.log(result);
       $('[id^=run_]').prop("disabled", false);
       $('#loader').hide();
     }
+
+    var progressPoller;
+
+    function progressPolling(interval) {
+      interval = interval || 1000;
+      progressPoller = setTimeout(function() {
+        google.script.run.withSuccessHandler(function(at) {
+          console.log(at);
+          var bar = $('#loader > div');
+          if (at == undefined || at.stage == 'finished') {
+            clearTimeout(progressPoller);
+          }
+          if (at.stage == 'finished' || at.stage == 'inserting-data') {
+            bar.removeClass('determinate');
+            bar.addClass('indeterminate');
+            bar.css('width', '');
+          }
+          if (at.stage == 'get-tweets') {
+            if (bar.hasClass('indeterminate')) {
+              bar.removeClass('indeterminate');
+              bar.addClass('determinate');
+            }
+            bar.css('width', at.data + '%');
+          }
+
+
+
+        }).getDocumentCache('collectionRun');
+        progressPolling();
+      }, interval);
+    };
+
   });
 </script>
