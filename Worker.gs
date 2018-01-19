@@ -13,7 +13,7 @@ function getTweets_(settings, doc) {
                      include_entities: 1,
                      since_id: settings.since_id || 0
                     };
-  var numTweets = parseInt(settings.numberOfTweets);
+  var numTweets = parseInt(settings.num_of_tweets);
   if (numTweets > 18000)  numTweets = 18000;
   var maxPage = Math.ceil(numTweets/queryParams.count);
   var data = [];

@@ -43,37 +43,12 @@
             <div class="row">
               <ul class="collapsible col s12" data-collapsible="accordion">
                 <li>
-                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Collection Frequency</div>
-                  <div class="collapsible-body row">
-                    <div class="col s12">
-                      <label for="update_frequency">Update Frequency</label>
-                      <select id="update_frequency" class="settings">
-                      <option value="" disabled selected>Auto-Collect Frequency</option>
-                      <option value="0">Off</option>
-                      <option value="15">Every 15 mins</option>
-                      <option value="30">Every 30 mins</option>
-                      <option value="60">Hourly</option>
-                      <option value="daily">Daily</option>
-                      <option value="weekly">Weekly</option>
-                    </select>
-                    </div>
-                    <div class=" col s12">
-                      <label for="end_collect_date">Stop Auto-Collect Date (leave blank for continuous collection)</label>
-                      <input type="text" class="datepicker" id="end_collect_date" class="settings">
-                    </div>
-                    <div class=" col s12">
-                      <label for="end_collect_time">Stop Auto-Collect Time</label>
-                      <input type="text" class="timepicker" id="end_collect_time" class="settings">
-                    </div>
-                  </div>
-                </li>
-                <li>
                   <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Limit Collection</div>
                   <div class="collapsible-body row">
                     <div class="col s12">
-                      <label for="numberOfTweets">Max. number of tweets per collection</label>
+                      <label for="num_of_tweets">Max. number of tweets per collection</label>
                       <p class="range-field">
-                        <input type="range" id="numberOfTweets" min="0" max="18000" step="100" class="settings" value="3000" />
+                        <input type="range" id="num_of_tweets" min="0" max="18000" step="100" class="settings" value="3000" />
                       </p>
                     </div>
                     <div class="input-field col s12">
@@ -112,13 +87,39 @@
                     </div>
                   </div>
                 </li>
+                <li>
+                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Auto-Collect Settings</div>
+                  <div class="collapsible-body row">
+                    <div class="col s12">
+                      <label for="update_frequency">Update Frequency</label>
+                      <select id="update_frequency" class="settings">
+                      <option value="" disabled selected>Auto-Collect Frequency</option>
+                      <option value="15mins">Every 15 mins</option>
+                      <option value="30mins">Every 30 mins</option>
+                      <option value="hourly">Hourly</option>
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                    </select>
+                    </div>
+                    <div class=" col s12">
+                      <label for="end_collect_date_in">Stop Auto-Collect Date (leave blank for continuous collection)</label>
+                      <input type="text" id="end_collect_date_in">
+                      <input type="hidden" id="end_collect_date" class="settings">
+                    </div>
+                    <!-- <div class=" col s12">
+                      <label for="end_collect_time_in">Stop Auto-Collect Time</label>
+                      <input type="text" id="end_collect_time_in">
+                      <input type="hidden" id="end_collect_time" class="settings">
+                    </div> -->
+                  </div>
+                </li>
               </ul>
             </div>
 
           </div>
           <div class="input-field center-align row">
             <button type="submit" id="run_now_basic">Run Now</button>
-            <button class="action" type="submit" id="run_auto">Start Auto-Collect</button>
+            <button type="submit" id="run_auto"><span></span> Auto-Collect</button>
           </div>
 
 
@@ -149,7 +150,8 @@
   </footer>
 </body>
 <script>
-  var use_defaults = '<?= use_defaults ?>' == 'true'; // default columns for archive
+  var use_default_cols = '<?= use_default_cols ?>' == 'true'; // default columns for archive
+  var auto_collect = '<?= auto_collect ?>' == 'true'; // default columns for archive
 </script>
   <?!= Include.gs(['i18n','helpers','Columns']); ?>
   <?!= Include.js(['collection']); ?>

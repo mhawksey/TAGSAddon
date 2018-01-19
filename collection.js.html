@@ -5,11 +5,15 @@
     var DEFAULT_COLS = [];
     script.settingsSave('doc', 'collect');
 
-    getSheets();
+    getSheets(); // populate sheets select
+    autoScheduleButton(auto_collect);
+
+    
+    // setting up columns selection and defaults
     $.map(COLS['search/tweets'], function(grp) {
       $.map(grp.children, function(obj) {
         obj.text = obj.id;
-        if (use_defaults && obj.is_default) {
+        if (use_default_cols && obj.is_default) {
           obj.selected = true;
         } else if (obj.is_default) {
           DEFAULT_COLS.push(obj.id);
@@ -17,21 +21,12 @@
       });
 
     });
-
     $('#columns').select2({
       data: COLS['search/tweets']
     });
     
-    $('.datepicker').pickadate({
-      selectMonths: true, // Creates a dropdown to control month
-      selectYears: 15, // Creates a dropdown of 15 years to control year,
-      today: false,
-      clear: 'Clear',
-      close: 'Ok',
-      closeOnSelect: false // Close upon selecting a date,
-    });
-    
-    $('.timepicker').pickatime({
+    /*
+    $('#end_collect_time_in').pickatime({
       default: 'now', // Set default time: 'now', '1:30AM', '16:30'
       fromnow: 0, // set default time to * milliseconds from now (using with default = 'now')
       twelvehour: false, // Use AM/PM or 24-hour format
@@ -41,8 +36,7 @@
       autoclose: false, // automatic close timepicker
       ampmclickable: true, // make AM PM clickable
       aftershow: function() {} //Function for after opening timepicker
-    });
-
+    });*/
 
     function poll(interval) {
       interval = interval || 2000;
@@ -82,11 +76,11 @@
       $('#loader').show();
       progressPolling();
       if (type === 'run_auto'){
-        google.script.run.withSuccessHandler(collectionResults)
-            .autoCollectSetup();
+        google.script.run.withSuccessHandler(autoCollectSetupHandler)
+            .autoCollectSetup($(e.currentTarget).find('span').text());
       } else { 
         google.script.run.withSuccessHandler(collectionResults)
-          .collectionRun({mode: type});
+          .collectionRun();
       }
 
 
@@ -109,6 +103,27 @@
       $('[id^=run_]').prop("disabled", false);
       $('#loader').hide();
     }
+    
+    function autoCollectSetupHandler(result) {
+      console.log(result);
+      autoScheduleButton(result.data);
+      $('[id^=run_]').prop("disabled", false);
+      $('#loader').hide();
+    }
+    
+    function autoScheduleButton(canStart){
+      var action_but = $('#run_auto');
+      if (canStart === 0){
+        action_but.addClass('action');
+        action_but.removeClass('create');
+        action_but.find('span').text('Start');
+      } else {
+        action_but.removeClass('action');
+        action_but.addClass('create');
+        action_but.find('span').text('Stop');
+      }
+    }
+    
 
     var progressPoller;
 
@@ -116,26 +131,23 @@
       interval = interval || 1000;
       progressPoller = setTimeout(function() {
         google.script.run.withSuccessHandler(function(at) {
-          console.log(at);
           var bar = $('#loader > div');
           if (at == undefined || at.stage == 'finished') {
             clearTimeout(progressPoller);
-          }
-          if (at.stage == 'finished' || at.stage == 'inserting-data') {
-            bar.removeClass('determinate');
-            bar.addClass('indeterminate');
-            bar.css('width', '');
-          }
-          if (at.stage == 'get-tweets') {
-            if (bar.hasClass('indeterminate')) {
-              bar.removeClass('indeterminate');
-              bar.addClass('determinate');
+            
+          } else {
+            if (at.stage == 'finished' || at.stage == 'inserting-data') {
+              bar.removeClass('determinate');
+              bar.addClass('indeterminate');
+              bar.css('width', '');
+            } else if (at.stage == 'get-tweets') {
+              if (bar.hasClass('indeterminate')) {
+                bar.removeClass('indeterminate');
+                bar.addClass('determinate');
+              }
+              bar.css('width', at.data + '%');
             }
-            bar.css('width', at.data + '%');
           }
-
-
-
         }).getDocumentCache('collectionRun');
         progressPolling();
       }, interval);

@@ -59,7 +59,8 @@ function showSidebar_(pageName) {
   } else {
     template.authUrl = "";
   }
-  template.use_defaults = (!setting.metadataId) ? true : false;
+  template.use_default_cols = (!setting.metadataId) ? true : false;
+  template.auto_collect = (!setting.triggers) ? true : false;
   var page = template.evaluate()
       .setTitle('TAGS - '+pageName)
       .setSandboxMode(HtmlService.SandboxMode.IFRAME);

@@ -23,7 +23,7 @@ function collectionRun(action) {
   // getting data part
   var since_id = 0;
   // find first id_str value
-  var id_strs = sheet.getRange(2, id_str_col_idx+1, settings.numberOfTweets).getValues();
+  var id_strs = sheet.getRange(2, id_str_col_idx+1, settings.num_of_tweets).getValues();
   for (r in id_strs){
     if (id_strs[r][0] !== ""){
       settings.since_id = id_strs[r][0];
@@ -51,11 +51,66 @@ function collectionRun(action) {
 }
 
 function autoCollectSetup(action){
-  var settings = getDocProps_();
-  
-  var trigger = ScriptApp.newTrigger(collectionRun)
-                         .timeBased();
-  
+  var doc = SpreadsheetApp.getActive();
+  var created_trigs = [];
+  var fnLabel = 'autoCollectSetup';
+  putDocumentCache(fnLabel, {stage: 'start'});
+  if (action == 'Stop'){
+    deleteAllTriggers_();
+    doc.toast("Auto-Collect stopped", "TAGS");
+  } else {
+    var settings = getDocProps_();
+    // if existing triggers remove them
+    if (settings.triggers){
+      deleteAllTriggers_();
+    }
+    // handle auto collect trigger setup
+    if (settings.update_frequency !== ''){
+      // if no frequency set defualt to 1 hr
+      storeDocProp_('update_frequency','hourly');
+      settings.update_frequency = 'hourly';
+    } 
+    
+    created_trigs.push(settings.update_frequency);
+    
+    var refresh_trig = ScriptApp.newTrigger(collectionRun)
+                                .timeBased();
+    switch (settings.update_frequency){
+      case '15mins':
+        refresh_trig.everyMinutes(15);
+        break;
+      case '30mins':
+        refresh_trig.everyMinutes(30);
+        break;
+      case 'hourly':
+        refresh_trig.everyHours(1);
+        break;
+      case 'daily':
+        refresh_trig.everyDays(1);
+        break;
+      case 'weekly':
+        refresh_trig.everyWeeks(1);
+        break;
+      default:
+        refresh_trig.everyHours(1);
+    }
+    created_trigs.push(refresh_trig.create().getUniqueId());
+    
+    // if a stop has been requested add it
+    if (settings.end_collect_date){
+      
+      var stop_date = new Date(parseInt(settings.end_collect_date));
+      var stop_trig = ScriptApp.newTrigger(deleteAllTriggers_)
+                               .timeBased()
+                               .at(stop_date)
+                               .create();
+      created_trigs.push(stop_trig.getUniqueId());
+    }
+    storeDocProp_('triggers',created_trigs);
+    doc.toast("Auto-Collect started", "TAGS");
+  }
+  putDocumentCache(fnLabel, {stage: 'finished'});
+  return {status: 'finished', data:created_trigs.length};
 }
 
 
@@ -91,6 +146,7 @@ function storeSettings(settings, type){
                  settings[Object.keys(settings)[0]]);
       break;
     case 'user':
+      
       storeUserProp_(Object.keys(settings)[0], 
                  settings[Object.keys(settings)[0]]);
       break;

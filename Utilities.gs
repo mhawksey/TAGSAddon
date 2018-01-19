@@ -45,20 +45,20 @@ function flattenDataFast_(ob){
 
 function checkSheetMetadata_(doc, sheet, settings, action, fnLabel){
   // if metadata check sheet id hasn't changed
-  if (settings.metadataId && settings.metadataId !== 'false'){
+  if (settings.metadataId){
     try {
       var meta = Sheets.Spreadsheets.DeveloperMetadata.get (doc.getId() , settings.metadataId);
       var saved_sheet_id = meta.location.dimensionRange.sheetId.toString() || "0";
       var id_str_col_idx = meta.location.dimensionRange.startIndex;
       var id_str = sheet.getRange(1, id_str_col_idx+1).getValue();
       if (id_str !== 'id_str'){
-        storeDocProp_('metadataId',false);
+        storeDocProp_('metadataId','');
         putDocumentCache(fnLabel, {stage: 'restart'});
         return collectionRun();
       }
     } catch(e) {
       // sheet probably deleted so remove metadataId
-      storeDocProp_('metadataId',false);
+      storeDocProp_('metadataId','');
       putDocumentCache(fnLabel, {stage: 'restart-error'});
       return collectionRun();
     }
@@ -68,6 +68,16 @@ function checkSheetMetadata_(doc, sheet, settings, action, fnLabel){
   }
   storeDocProp_('id_str_col_idx', id_str_col_idx);
   return true;
+}
+
+function deleteAllTriggers_(debug){
+  if (!debug) {
+    var triggers = ScriptApp.getUserTriggers(SpreadsheetApp.getActive());
+    for (var t = 0; t < triggers.length; i++) {
+      ScriptApp.deleteTrigger(triggers[t]);
+    }
+  }
+  storeDocProp_('triggers','');
 }
 
 function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
@@ -221,8 +231,9 @@ function removeDuplicates( arr, prop ) {
  */
 function storeDocProp_(key, value){
   if(Array.isArray(value)){
-   value = value.join(','); 
+    value = value.join(','); 
   }
+  //console.log({storeDocProp: key, value: value});
   PropertiesService.getDocumentProperties().setProperty(key, value);
   CacheService.getDocumentCache().put(key, value, 86400);
   CacheService.getDocumentCache().put('ALL', 
@@ -251,7 +262,7 @@ function getDocProp_(key){
     var value = PropertiesService.getDocumentProperties().getProperty(key);
     CacheService.getDocumentCache().put(key, value, 86400);
   }
-  //console.log({getDocProp: key, value: value});
+  console.log({getDocProp: key, value: value});
   return value;
 }
 /**

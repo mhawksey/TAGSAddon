@@ -61,8 +61,9 @@ script.doKeySecretHandling = function(){
 
 
 script.handleSettings = function(setting) {
+  console.log(setting);
   SETTINGS_COUNT--;
-  if (setting.value !== '') {
+  //if (setting.value !== '') {
     switch (setting.type) {
       case 'select-one':
         $('#' + setting.id + ' option[value=' + setting.value + ']').prop('selected', 'selected');
@@ -71,6 +72,27 @@ script.handleSettings = function(setting) {
       case 'text':
         $('#' + setting.id).val(setting.value);
         break;
+      case 'hidden':
+        $('#' + setting.id).val(setting.value);
+        // date/time pickers
+        var $input = $('#' + setting.id + '_in').pickadate({
+          selectMonths: true, // Creates a dropdown to control month
+          selectYears: 15, // Creates a dropdown of 15 years to control year,
+          today: false,
+          clear: 'Clear',
+          close: 'Ok',
+          closeOnSelect: true, // Close upon selecting a date,
+          onSet: function(val) {
+            $('#' + setting.id).val(val.select || '')
+                               .trigger('change');
+          }
+        });
+        if (setting.value){
+          // Use the picker object directly.
+          var picker = $input.pickadate('picker');
+          picker.set('select', parseInt(setting.value));
+        }
+        break;
       case 'range':
         $('#' + setting.id).val(setting.value);
         break;
@@ -78,7 +100,7 @@ script.handleSettings = function(setting) {
         $('#' + setting.id).val(setting.value.split(',')).trigger("change");
         break;
     }
-  }
+  //}
   Materialize.updateTextFields();
   //script.doKeySecretHandling();
   if (SETTINGS_COUNT === 0){
