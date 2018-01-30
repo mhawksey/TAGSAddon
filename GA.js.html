@@ -1,0 +1,21 @@
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-48225260-5"></script>
+<script>
+  if (navigator.doNotTrack && navigator.doNotTrack === 1) {
+    window['ga-disable-UA-48225260-5'] = true;
+    google.script.run.expose('GATracking','setNoTrackingPref', true );
+    //google.script.run.trackingOptOut();
+  } else {
+    google.script.run.expose('GATracking','setNoTrackingPref', false );
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-48225260-5',{
+  'user_id': '<?= Session.getTemporaryActiveUserKey(); ?>',
+  'page_title': PAGE_TITLE,
+  'page_location': PAGE_URL
+});
+</script>

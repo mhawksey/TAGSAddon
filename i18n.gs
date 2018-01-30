@@ -1,14 +1,14 @@
 var i18n = {
   "Setup Twitter Access": {
-    "en": "Setup Twitter Access",
-    "desc": "Menu item"
+    "en": "Setup Twitter",
+    "desc": "Nav Menu item"
   },
-  "Create Collection": {
-    "en": "Create Collection",
-    "desc": "Menu item"
+  "Collection": {
+    "en": "Collection",
+    "desc": "Nav Menu item"
   },
   "setup_to_access": {
-    "en": "To access data from Twitter it is required that you sign in with a Twitter account. This is done on via the Twitter website and your connection can be revoked at any time. This should only need to be done once.",
+    "en": "To access data from Twitter it is required that you sign in with a Twitter account. By connecting to Twitter and using this Add-on you agree to the <a href='https://twitter.com/en/tos'>Twitter Terms of Service</a> and the <a href='https://tags.hawksey.info/privacy-policy/'>TAGS Add-on Privacy and Usage Policy</a>.",
     "desc": ""
   },
   "setup_to_connect": {

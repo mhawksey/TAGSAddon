@@ -43,7 +43,7 @@ function flattenDataFast_(ob){
   return p;
 }
 
-function checkSheetMetadata_(doc, sheet, settings, action, fnLabel){
+function validSheetMetadata_(doc, sheet, settings, action, fnLabel){
   // if metadata check sheet id hasn't changed
   if (settings.metadataId){
     try {
@@ -52,13 +52,13 @@ function checkSheetMetadata_(doc, sheet, settings, action, fnLabel){
       var id_str_col_idx = meta.location.dimensionRange.startIndex;
       var id_str = sheet.getRange(1, id_str_col_idx+1).getValue();
       if (id_str !== 'id_str'){
-        storeDocProp_('metadataId','');
+        setDocProp_('metadataId','');
         putDocumentCache(fnLabel, {stage: 'restart'});
         return collectionRun();
       }
     } catch(e) {
       // sheet probably deleted so remove metadataId
-      storeDocProp_('metadataId','');
+      setDocProp_('metadataId','');
       putDocumentCache(fnLabel, {stage: 'restart-error'});
       return collectionRun();
     }
@@ -66,7 +66,7 @@ function checkSheetMetadata_(doc, sheet, settings, action, fnLabel){
   if (!settings.metadataId || saved_sheet_id !== settings.sheetId) {
     setupArchiveSheet_(doc, sheet, settings, action, fnLabel);
   }
-  storeDocProp_('id_str_col_idx', id_str_col_idx);
+  setDocProp_('id_str_col_idx', id_str_col_idx);
   return true;
 }
 
@@ -77,7 +77,7 @@ function deleteAllTriggers_(debug){
       ScriptApp.deleteTrigger(triggers[t]);
     }
   }
-  storeDocProp_('triggers','');
+  setDocProp_('triggers','');
 }
 
 function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
@@ -149,7 +149,7 @@ function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
     }}];
   var meta = Sheets.Spreadsheets.batchUpdate({requests:requests},doc.getId());
   settings.metadataId = meta.replies[0].createDeveloperMetadata.developerMetadata.metadataId.toString();
-  storeDocProp_('metadataId',settings.metadataId);
+  setDocProp_('metadataId',settings.metadataId);
   
   // check headings match user selected
   // these are the heads
@@ -229,7 +229,7 @@ function removeDuplicates( arr, prop ) {
  * @param {string} key The property key.
  * @param {string | Object} value The property value.
  */
-function storeDocProp_(key, value){
+function setDocProp_(key, value){
   if(Array.isArray(value)){
     value = value.join(','); 
   }
@@ -246,7 +246,7 @@ function storeDocProp_(key, value){
  * @param {string} key The property key.
  * @param {string} value The property value.
  */
-function storeUserProp_(key, value){
+function setUserProp_(key, value){
   PropertiesService.getUserProperties().setProperty(key, value);
   CacheService.getUserCache().put(key, value, 86400);
 }
@@ -321,26 +321,54 @@ function getConsumer_(key){
 }
 
 /*
-* Example function for Google Analytics Measurement Protocol.
+* Build data to send Google Analytics Measurement Protocol.
 * @param {Object} data for event to track
 */
-function sendToGA(data){
+function sendToGA_(data){
   var base = {v:   '1',
               tid: 'UA-48225260-5',
-              cid: Session.getTemporaryActiveUserKey(),
-              t:   'event', 
-              ec:  'TAGSAddon', 
-              ea:  'Data Collection'};
+              uid: Session.getTemporaryActiveUserKey()};
   // https://stackoverflow.com/a/171256
   for (var a in base) { data[a] = base[a]; }
   var payload = Object.keys(data).map(function(key) {
     return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
   }).join('&');
   
-  var options = {'method' : 'POST',
-                 'payload' : payload };
-  
-  UrlFetchApp.fetch('https://www.google-analytics.com/collect', options); 
-  console.log({call: 'GA', options: options});
+  addToGABatch_(payload, new Date());
+}
+
+/*
+* Adds our GA call to a queue and sends when it hits 20
+* @param {string} data for event to track
+* @param {Date} date of event to track
+*/
+function addToGABatch_(query, time){
+  GA_BATCH.push({query: query, time:time});
+  if (GA_BATCH.length >= 20){
+    processGABatch_(); 
+  }
+}
+ 
+/* 
+* Send data to GA via batch
+*/
+function processGABatch_(){
+  var no_tracking = getUserProp_('no_tracking');
+  if (!no_tracking){
+    var payload = "";
+    var ga_now = new Date().getTime();
+    for (var i=0; i < GA_BATCH.length; i++){
+      payload += GA_BATCH[i].query + "&qt=" + (ga_now - GA_BATCH[i].time) + "\n";
+    }
+    try {
+      var options = {'method' : 'POST',
+                     'payload' : payload };
+      UrlFetchApp.fetch('https://www.google-analytics.com/batch', options);
+      //console.log({call:'processGABatch_', data:options});
+      GA_BATCH = [];
+    } catch(e) {
+      console.error({call: 'progressGABatch_', error:e});
+    }
+  }
 }
 

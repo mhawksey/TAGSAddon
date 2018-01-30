@@ -7,7 +7,13 @@
 
     getSheets(); // populate sheets select
     autoScheduleButton(auto_collect);
-
+    
+    google.script.run.withSuccessHandler(setLastRunTooltip).lastRun();
+    
+    $('#auto_export_num').on("change click input", function(e) {
+            var i = $(this).siblings(".thumb");
+            i.find(".value").html($(this).val()+'K');
+    });
     
     // setting up columns selection and defaults
     $.map(COLS['search/tweets'], function(grp) {
@@ -23,6 +29,13 @@
     });
     $('#columns').select2({
       data: COLS['search/tweets']
+    });
+    
+    var endpoint_select = $('#endpoint');
+    $.each(ENDPOINTS, function(idx) {
+    console.log(idx);
+      endpoint_select.append($('<option>', { value: idx })
+          .text(ENDPOINTS[idx].name))
     });
     
     /*
@@ -71,6 +84,8 @@
     // Event Handlers
     $('[id^=run_]').on('click', function(e) {
       e.preventDefault(); //prevent form from submitting
+      if(this.form.checkValidity()){
+      
       var type = $(e.currentTarget).prop("id");
       $('[id^=run_]').prop("disabled", true);
       $('#loader').show();
@@ -82,7 +97,7 @@
         google.script.run.withSuccessHandler(collectionResults)
           .collectionRun();
       }
-
+}
 
     });
 
@@ -90,16 +105,20 @@
       $('#columns').val(DEFAULT_COLS).trigger("change");
     });
 
-    function collectionResults(result) {
-      if (result.status === 'import') {
-        result.import = true;
-        result.status = 'importing';
+    function collectionResults(resp) {
+      console.log(resp)
+      if (resp.status === 'import') {
+        resp.import = true;
+        resp.status = 'importing';
         progressPolling();
         google.script.run.withSuccessHandler(collectionResults)
           .collectionRun(result);
 
       }
-      console.log(result);
+      
+      if (resp.result.run){
+        setLastRunTooltip(resp.result.run);
+      }
       $('[id^=run_]').prop("disabled", false);
       $('#loader').hide();
     }
@@ -134,7 +153,9 @@
           var bar = $('#loader > div');
           if (at == undefined || at.stage == 'finished') {
             clearTimeout(progressPoller);
-            
+            bar.removeClass('determinate');
+            bar.addClass('indeterminate');
+            bar.css('width', '');
           } else {
             if (at.stage == 'finished' || at.stage == 'inserting-data') {
               bar.removeClass('determinate');
@@ -152,6 +173,13 @@
         progressPolling();
       }, interval);
     };
+    
+    function setLastRunTooltip(data){
+      if (data){
+        $('[id^=run_]').attr('data-tooltip', 'Last run '+data);
+        $('.tooltipped').tooltip({delay: 100});
+      }
+    }
 
   });
 </script>

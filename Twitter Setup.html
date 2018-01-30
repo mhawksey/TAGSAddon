@@ -3,6 +3,11 @@
 
 <head>
   <base target="_top">
+    <script>
+    var PAGE_TITLE = '<?= page_title ?>';
+    var PAGE_URL = '<?= page_url ?>';
+  </script>
+  <?!= Include.js(['GA']); ?>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">

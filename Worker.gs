@@ -7,13 +7,26 @@
 */
 function getTweets_(settings, doc) {
   //var queryParams = getQueryParams_(params, type);
-  var queryParams = {q: settings.search_term,
+  var queryParams = {q: settings.tw_search_term,
                      count: 100,
                      result_type: 'recent',
                      include_entities: 1,
                      since_id: settings.since_id || 0
                     };
-  var numTweets = parseInt(settings.num_of_tweets);
+  // prepare search term
+  if (settings.tw_period && settings.tw_period !== 'default'){
+    var period = parseInt(settings.tw_period);
+    var until=new Date();
+    until.setDate(until.getDate()-period);
+    queryParams.until = twDate_(until);
+  }
+  
+  if (settings.tw_adv_params){
+    var extraParams = JSON.parse(settings.tw_adv_params);
+    // https://stackoverflow.com/a/171256
+    for (var a in extraParams) { queryParams[a] = extraParams[a]; }
+  }
+  var numTweets = parseInt(settings.tw_num_of_tweets);
   if (numTweets > 18000)  numTweets = 18000;
   var maxPage = Math.ceil(numTweets/queryParams.count);
   var data = [];
@@ -54,10 +67,20 @@ function getTweets_(settings, doc) {
         if (page > maxPage) done = true; // if collected 16 pages (the max) break the loop
       } 
     } //end of while loop
-    sendToGA({ el: 'Pages', ev:page});
+    sendToGA_({t: 'event', ec: 'TAGSAddon', ea: 'Data Collection', el: 'Pages', ev:page});
     return removeDuplicates(data,'id_str');
   } catch (e) {
     Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name);
     return data;
   }
-} 
+}
+
+/**
+* Formats date object for Twiiter API call.
+*
+* @param {Date} aDate Date object
+* @return {string} Formatted date 
+*/
+function twDate_(aDate){
+  return Utilities.formatDate(aDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
+}

@@ -23,7 +23,7 @@ function collectionRun(action) {
   // getting data part
   var since_id = 0;
   // find first id_str value
-  var id_strs = sheet.getRange(2, id_str_col_idx+1, settings.num_of_tweets).getValues();
+  var id_strs = sheet.getRange(2, id_str_col_idx+1, settings.tw_num_of_tweets).getValues();
   for (r in id_strs){
     if (id_strs[r][0] !== ""){
       settings.since_id = id_strs[r][0];
@@ -46,8 +46,11 @@ function collectionRun(action) {
   var dur = (endTime.getTime()/1000-startTime.getTime()/1000).toFixed(3);
   //doc.toast("Time taken "+((endTime.getTime()/1000-startTime.getTime()/1000).toFixed(3))+"s", "TAGS");
   putDocumentCache(fnLabel, {stage: 'finished',data:dur});
-  sendToGA({ el: 'Tweets', ev:data.length});
-  return {status: 'finished', result: data.length};  
+  sendToGA_({t: 'event', ec: 'TAGSAddon', ea: 'Data Collection', el: 'Tweets', ev:data.length});
+  endTime = Utilities.formatDate(endTime, Session.getScriptTimeZone(), 'yyy-MM-dd HH:mm:ss');
+  setDocProp_('last_run', endTime);
+  processGABatch_();
+  return {status: 'finished', result: {tweets:data.length, run: endTime }};  
 }
 
 function autoCollectSetup(action){
@@ -67,7 +70,7 @@ function autoCollectSetup(action){
     // handle auto collect trigger setup
     if (settings.update_frequency !== ''){
       // if no frequency set defualt to 1 hr
-      storeDocProp_('update_frequency','hourly');
+      setDocProp_('update_frequency','hourly');
       settings.update_frequency = 'hourly';
     } 
     
@@ -100,13 +103,18 @@ function autoCollectSetup(action){
     if (settings.end_collect_date){
       
       var stop_date = new Date(parseInt(settings.end_collect_date));
-      var stop_trig = ScriptApp.newTrigger(deleteAllTriggers_)
-                               .timeBased()
-                               .at(stop_date)
-                               .create();
-      created_trigs.push(stop_trig.getUniqueId());
+      if (stop_date > new Date()){
+        var stop_trig = ScriptApp.newTrigger(deleteAllTriggers_)
+                                 .timeBased()
+                                 .at(stop_date)
+                                 .create();
+        created_trigs.push(stop_trig.getUniqueId());
+      } else {
+        deleteAllTriggers_();
+        created_trigs = [];
+      }
     }
-    storeDocProp_('triggers',created_trigs);
+    setDocProp_('triggers',created_trigs);
     doc.toast("Auto-Collect started", "TAGS");
   }
   putDocumentCache(fnLabel, {stage: 'finished'});
@@ -142,12 +150,12 @@ function getSheetNames(existing_sheets){
 function storeSettings(settings, type){
   switch (type){
     case 'doc':
-      storeDocProp_(Object.keys(settings)[0], 
+      setDocProp_(Object.keys(settings)[0], 
                  settings[Object.keys(settings)[0]]);
       break;
     case 'user':
       
-      storeUserProp_(Object.keys(settings)[0], 
+      setUserProp_(Object.keys(settings)[0], 
                  settings[Object.keys(settings)[0]]);
       break;
   }
@@ -190,4 +198,18 @@ function getDocumentCache(key){
  */
 function putDocumentCache(key, value){
  CacheService.getDocumentCache().put(key, JSON.stringify(value), 2);
+}
+
+/**
+ * Set opt out of GA tracking.
+ */
+function trackingOptOut(){
+ setUserProp_('no_tracking', true);
+}
+
+/**
+ * Get Last run date.
+ */
+function lastRun(){
+ return getDocProp_('last_run');
 }

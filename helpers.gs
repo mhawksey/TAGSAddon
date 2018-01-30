@@ -20,21 +20,27 @@ script.fillMessages_ = function(optLang) {
     if ($(this).prop('tagName') == 'IMG') {
       $(this).attr({'title': i18nText});
     } else {
-      $(this).text(i18nText);
+      $(this).html(i18nText);
     }
   });
 };
 
 script.settingsSave = function(type, context) {
   $('.settings').each(function(index) {
+      var elType = this.type || this.tagName.toLowerCase();
       google.script.run.withSuccessHandler(script.handleSettings)
-        .getSettings($(this).attr('id'), type, this.type || this.tagName.toLowerCase());
+        .getSettings($(this).attr('id'), type, elType);
       SETTINGS_COUNT++;
 
       // handle on change 
-      $(this).on('input, change', function(e) {
+      $(this).on('propertychange change click keyup input paste', function(e) {
         var setObj = {};
-        setObj[$(this).attr('id')] = $(this).val();
+        if (elType === 'checkbox'){
+          var val = $(this).is(':checked');
+        } else {
+          var val = $(this).val();
+        }
+        setObj[$(this).attr('id')] = val;
         google.script.run.storeSettings(setObj, type);
         if (context === 'setup'){
           script.doKeySecretHandling();
@@ -66,8 +72,10 @@ script.handleSettings = function(setting) {
   //if (setting.value !== '') {
     switch (setting.type) {
       case 'select-one':
-        $('#' + setting.id + ' option[value=' + setting.value + ']').prop('selected', 'selected');
-        $('select').material_select();
+        if (setting.value){
+          $('#' + setting.id + ' option[value="' + setting.value + '"]').prop('selected', 'selected');
+          $('select').material_select();
+        }
         break;
       case 'text':
         $('#' + setting.id).val(setting.value);
@@ -99,6 +107,10 @@ script.handleSettings = function(setting) {
       case 'select-multiple':
         $('#' + setting.id).val(setting.value.split(',')).trigger("change");
         break;
+      case 'checkbox':
+        //if (setting.value === 'true'){
+          $('#' + setting.id).prop('checked', (setting.value == 'true'));
+        //}
     }
   //}
   Materialize.updateTextFields();
@@ -108,7 +120,12 @@ script.handleSettings = function(setting) {
     $('#container').show();
     $('ul.tabs').tabs();
   }
-  
+}
+
+// http://ramblings.mcpher.com/Home/excelquirks/gassnips/exposeserver
+function expose (namespace , method) {
+   return this[namespace][method]
+  .apply(this,Array.prototype.slice.call(arguments,2));
 }
 
 // Are we running in the context of the Options page? Or is this file being included so that

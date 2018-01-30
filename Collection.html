@@ -3,16 +3,19 @@
 
 <head>
   <base target="_top">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ifvisible/1.0.6/ifvisible.min.js"></script>
-
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-  <?!= Include.css(['style','select2-materialize']); ?>
+  <script>
+    var PAGE_TITLE = '<?= page_title ?>';
+    var PAGE_URL = '<?= page_url ?>';
+  </script>
+  <?!= Include.js(['GA']); ?>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ifvisible/1.0.6/ifvisible.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+    <?!= Include.css(['style','select2-materialize']); ?>
 </head>
 
 <body>
@@ -22,11 +25,11 @@
   <div class="row" id="container" style="display:none" ;>
     <div class="col s12">
       <ul class="tabs grey lighten-3">
-        <li class="tab col s6"><a href="#basic">Basic</a></li>
-        <li class="tab col s6"><a href="#adv">Advanced</a></li>
+        <li class="tab col s6"><a href="#setup">Settings</a></li>
+        <li class="tab col s6"><a href="#summary">Summary</a></li>
       </ul>
     </div>
-    <div id="basic" class="col s12">
+    <div id="settings" class="col s12">
       <div class="row">
         <form id="basic_settings">
           <div class="row">
@@ -36,25 +39,36 @@
               </select>
               <label for="sheetId" data-error="A destination sheet is required">Set destination sheet</label>
             </div>
-            <div class="input-field col s12">
-              <input placeholder="#TAGS OR from:mhawksey" id="search_term" type="text" class="validate settings" required="" aria-required="true">
-              <label for="search_term" data-error="A search term is required">Search term</label>
-            </div>
             <div class="row">
               <ul class="collapsible col s12" data-collapsible="accordion">
+                <li>
+                  <div class="collapsible-header active"><i class="material-icons right">keyboard_arrow_down</i>Import Type</div>
+                  <div class="collapsible-body row">
+                    <div class="input-field col s12">
+                      <select id="endpoint" name="endpoint" class="validate settings" required="" aria-required="true">
+                        
+                      </select>
+                      <label for="endpoint" data-error="A Twitter data type is required">Select the type of data from Twitter to import</label>
+                    </div>
+                    <div class="input-field col s12">
+                      <input placeholder="#TAGS OR from:mhawksey" id="tw_search_term" type="text" class="validate settings" required="" aria-required="true">
+                      <label for="tw_search_term" data-error="A search term is required">Search term</label>
+                    </div>
+                  </div>
+                </li>
                 <li>
                   <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Limit Collection</div>
                   <div class="collapsible-body row">
                     <div class="col s12">
-                      <label for="num_of_tweets">Max. number of tweets per collection</label>
+                      <label for="tw_num_of_tweets">Max. number of tweets per collection</label>
                       <p class="range-field">
-                        <input type="range" id="num_of_tweets" min="0" max="18000" step="100" class="settings" value="3000" />
+                        <input type="range" id="tw_num_of_tweets" min="0" max="18000" step="100" class="settings" value="3000" />
                       </p>
                     </div>
                     <div class="input-field col s12">
-                      <select id="period" class="settings">
+                      <select id="tw_period" class="settings">
                       <option value="" disabled selected>Limit results to</option>
-                      <option value="0">None</option>
+                      <option value="default">None</option>
                       <option value="1">1 day ago</option>
                       <option value="2">2 days ago</option>
                       <option value="3">3 days ago</option>
@@ -63,7 +77,7 @@
                       <option value="6">6 days ago</option>
                       <option value="7">7 days ago</option>
                     </select>
-                      <label for="period">Days</label>
+                      <label for="tw_period">Days</label>
                     </div>
                   </div>
                 </li>
@@ -82,13 +96,13 @@
                   <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Advanced Parameters</div>
                   <div class="collapsible-body row">
                     <div class="input-field col s12">
-                      <input placeholder="{'geocode': '40.714353,-74.005973,30mi'}" id="adv_params" type="text" class="settings">
-                      <label for="adv_params">Advanced parameters</label>
+                      <input placeholder="{'geocode': '40.714353,-74.005973,30mi'}" id="tw_adv_params" type="text" class="settings">
+                      <label for="tw_adv_params">Advanced parameters</label>
                     </div>
                   </div>
                 </li>
                 <li>
-                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Auto-Collect Settings</div>
+                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Auto-Collect Options</div>
                   <div class="collapsible-body row">
                     <div class="col s12">
                       <label for="update_frequency">Update Frequency</label>
@@ -113,20 +127,35 @@
                     </div> -->
                   </div>
                 </li>
+                <li>
+                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Full Sheet Options</div>
+                  <div class="collapsible-body row">
+                    <div class="col s12">
+
+                      <input type="checkbox" id="auto_export" value="true" class="filled-in settings" />
+                      <label for="auto_export">Enable auto-export</label>
+                    </div>
+                    <div class="col s12">
+                      <label for="auto_export_num">Number of rows before export</label>
+                      <p class="range-field">
+                        <input type="range" id="auto_export_num" min="0" max="90" step="1" class="settings" value="30" class="settings" />
+                      </p>
+                      <p><em>Note: Google Sheets currently has a 2 million cell limit. Enabling this option will batch export data. An email notifcation will be sent when data is exported. Only the archive sheet will be exported</em></p>
+                    </div>
+                  </div>
+                </li>
               </ul>
             </div>
 
           </div>
           <div class="input-field center-align row">
-            <button type="submit" id="run_now_basic">Run Now</button>
-            <button type="submit" id="run_auto"><span></span> Auto-Collect</button>
+            <button type="submit" id="run_now_basic" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Never">Run Now</button>
+            <button type="submit" id="run_auto" class="tooltipped" data-position="bottom" data-delay="50" data-tooltip="Never"><span></span> Auto-Collect</button>
           </div>
-
-
         </form>
       </div>
     </div>
-    <div id="adv" class="col s12">
+    <div id="summary" class="col s12">
       <ul class="collapsible" data-collapsible="accordion">
         <li>
           <div class="collapsible-header"><i class="material-icons">filter_drama</i>First</div>
@@ -153,6 +182,7 @@
   var use_default_cols = '<?= use_default_cols ?>' == 'true'; // default columns for archive
   var auto_collect = '<?= auto_collect ?>' == 'true'; // default columns for archive
 </script>
-  <?!= Include.gs(['i18n','helpers','Columns']); ?>
+<?!= Include.gs(['i18n','helpers','Columns']); ?>
   <?!= Include.js(['collection']); ?>
+
 </html>

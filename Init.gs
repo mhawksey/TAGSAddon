@@ -3,6 +3,7 @@
  */
 
 var LANG = 'en';
+var GA_BATCH = [];
 
 /**
  * Adds a custom menu with items to show the sidebar and dialog.
@@ -13,9 +14,9 @@ function onOpen(e) {
   var service = getTwitterService_();
   var ui = SpreadsheetApp.getUi();
   var menu = ui.createAddonMenu()
-      .addItem(script.i18n.getMessage('Setup Twitter Access', LANG), 'showSidebarSetup');
+      .addItem(script.i18n.getMessage('Setup Twitter', LANG), 'showSidebarSetup');
   if (service.hasAccess()){
-      menu.addItem(script.i18n.getMessage('Create Collection', LANG), 'showSidebarCollection');
+      menu.addItem(script.i18n.getMessage('Collection', LANG), 'showSidebarCollection');
   }
   menu.addSubMenu(ui.createMenu('Utilities')
           .addItem('Wipe Sheet', 'wipeArchive'))
@@ -48,6 +49,10 @@ function showSidebarCollection() {
   showSidebar_('Collection');
 }
 
+/**
+* Show sidebar 
+* @param {string} pageName to show in sidebar 
+*/
 function showSidebar_(pageName) {
   var service = getTwitterService_();
   var setting = getDocProps_();
@@ -61,6 +66,8 @@ function showSidebar_(pageName) {
   }
   template.use_default_cols = (!setting.metadataId) ? true : false;
   template.auto_collect = (!setting.triggers) ? true : false;
+  template.page_title = pageName; 
+  template.page_url = SpreadsheetApp.getActive().getUrl();
   var page = template.evaluate()
       .setTitle('TAGS - '+pageName)
       .setSandboxMode(HtmlService.SandboxMode.IFRAME);

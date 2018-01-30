@@ -1,3 +1,102 @@
+var ENDPOINTS = {
+  "search/tweets":{
+    name: 'Search term',
+    url: 'https://developer.twitter.com/en/docs/tweets/search/api-reference/get-search-tweets',
+    rate_limit: 180,
+    refresh_win: 15,
+    max:18000,
+    params: { 
+      q: 'req', // maximum 500 chars
+      geocode: '',
+      lang: '',
+      result_type: 'recent',
+      count: 100,
+      until: '',
+      since_id: '',
+      max_id: '',
+      include_entities: true
+    }
+  },
+  "favorites/list":{
+    name: 'User likes',
+    url: 'https://developer.twitter.com/en/docs/tweets/post-and-engage/api-reference/get-favorites-list',
+    rate_limit: 75,
+    refresh_win: 15,
+    params: { 
+      screen_name: 'req',
+      count: 200,
+      since_id: '',
+      max_id: '',
+      include_entities: true
+    }
+  },
+  "followers/list":{
+    name: 'Followers',
+    url: 'https://developer.twitter.com/en/docs/accounts-and-users/follow-search-get-users/api-reference/get-followers-list',
+    rate_limit: 15,
+    refresh_win: 15,
+    params: { 
+      screen_name: 'req',
+      cursor: -1,
+      count: 200,
+      include_user_entities: true
+    }
+  },
+  "friends/list":{
+    name: 'Following',
+    url: 'https://developer.twitter.com/en/docs/accounts-and-users/follow-search-get-users/api-reference/get-friends-list',  
+    rate_limit: 15,
+    refresh_win: 15,
+    params: { 
+      screen_name: 'req',
+      cursor: -1,
+      count: 200,
+      include_user_entities: true
+    }
+  },
+  "lists/members":{
+    name: 'List members',
+    url: 'https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/get-lists-members',
+    rate_limit: 900,
+    refresh_win: 15,
+    params: { 
+      owner_screen_name: 'req',
+      slug: 'req',
+      cursor: -1,
+      count: 5000,
+      include_entities: true
+    }
+  },
+  "lists/statuses":{
+    name: 'List statuses',
+    url: 'https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/get-lists-statuses',
+    rate_limit: 900,
+    refresh_win: 15,
+    params: { 
+      owner_screen_name: 'req',
+      slug: 'req',
+      since_id: '',
+      max_id: '',
+      count: 5000, // ? not documented 
+      include_entities: true
+    }
+  },
+  "statuses/user_timeline":{
+    name: 'User timeline',
+    url: 'https://developer.twitter.com/en/docs/tweets/timelines/api-reference/get-statuses-user_timeline',
+    rate_limit: 900,
+    refresh_win: 15,
+    max: 3200,
+    params: { 
+      screen_name: 'req',
+      since_id: '',
+      max_id: '',
+      count: 200,
+      include_entities: true
+    }
+  }
+}
+
 var COLS = {
   "search/tweets": [{
     "text": "Tweet",

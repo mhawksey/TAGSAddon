@@ -96,6 +96,7 @@ color: rgba(0, 0, 0, 0.54);
 
 .collapsible-header.active {
 color: inherit;
+font-weight:500;
 }
 
 .collapsible li i {
@@ -172,7 +173,7 @@ color: #000;
 /* Slider colours */
 
 input[type=range]{
-width:98%;
+width:97%;
 }
 
 input[type=range]::-webkit-slider-thumb {
@@ -185,6 +186,32 @@ background-color: #4285f4;
 
 input[type=range]::-ms-thumb {
 background-color: #4285f4;
+}
+
+  
+[type="checkbox"].filled-in:checked+label:before {
+width: 7px;
+height: 11px;
+}
+
+[type="checkbox"].filled-in:not(:checked)+label:after {
+border: 2px solid rgba(0,0,0,0.38);
+width: 16px;
+height: 16px;
+}
+
+[type="checkbox"].filled-in:checked+label:after {
+border-color: #4285f4;
+background-color: #4285f4;
+width: 16px;
+height: 16px;
+}
+
+[type="checkbox"]+label {
+margin: 10px;
+font-size:13px;
+height: initial;
+line-height: initial;
 }
 
 /***** These are to edit the thumb and the text inside the thumb *****/
