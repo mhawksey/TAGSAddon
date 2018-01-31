@@ -46,10 +46,10 @@ function collectionRun(action) {
   var dur = (endTime.getTime()/1000-startTime.getTime()/1000).toFixed(3);
   //doc.toast("Time taken "+((endTime.getTime()/1000-startTime.getTime()/1000).toFixed(3))+"s", "TAGS");
   putDocumentCache(fnLabel, {stage: 'finished',data:dur});
-  sendToGA_({t: 'event', ec: 'TAGSAddon', ea: 'Data Collection', el: 'Tweets', ev:data.length});
+  GATracking.addToGA({t: 'event', ec: 'TAGSAddon', ea: 'Data Collection', el: 'Tweets', ev:data.length});
   endTime = Utilities.formatDate(endTime, Session.getScriptTimeZone(), 'yyy-MM-dd HH:mm:ss');
   setDocProp_('last_run', endTime);
-  processGABatch_();
+  GATracking.processGABatch();
   return {status: 'finished', result: {tweets:data.length, run: endTime }};  
 }
 

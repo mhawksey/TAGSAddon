@@ -1,15 +1,20 @@
 <script>
   $(function() {
+  /**
+   * Initialisation
+   */
     poll();
     var SHEETS = {};
     var DEFAULT_COLS = [];
     script.settingsSave('doc', 'collect');
 
     getSheets(); // populate sheets select
-    autoScheduleButton(auto_collect);
     
-    google.script.run.withSuccessHandler(setLastRunTooltip).lastRun();
+    // Collection submit button setup
+    autoScheduleButtonHandler(auto_collect);
+    google.script.run.withSuccessHandler(setLastRunTooltipHandler).lastRun();
     
+    // data range mod for sheet export value
     $('#auto_export_num').on("change click input", function(e) {
             var i = $(this).siblings(".thumb");
             i.find(".value").html($(this).val()+'K');
@@ -21,7 +26,8 @@
         obj.text = obj.id;
         if (use_default_cols && obj.is_default) {
           obj.selected = true;
-        } else if (obj.is_default) {
+        } 
+        if (obj.is_default) {
           DEFAULT_COLS.push(obj.id);
         }
       });
@@ -31,12 +37,24 @@
       data: COLS['search/tweets']
     });
     
+    $('#tw_input').characterCounter()
+    
+    // setup different data collection types
     var endpoint_select = $('#endpoint');
     $.each(ENDPOINTS, function(idx) {
-    console.log(idx);
       endpoint_select.append($('<option>', { value: idx })
-          .text(ENDPOINTS[idx].name))
+          .text(ENDPOINTS[idx].label))
     });
+    
+    endpoint_select.on('change', function(e) {
+      var endpoint = ENDPOINTS[$(this).val()];
+      $('#tw_input').attr('placeholder', endpoint.placeholder)
+                    .attr('data-tooltip', endpoint.tooltip); 
+      $('label[for="tw_input"]').text(endpoint.label);
+      $('.tooltipped').tooltip({delay: 100});
+      console.log(endpoint);
+    });
+    
     
     /*
     $('#end_collect_time_in').pickatime({
@@ -51,6 +69,9 @@
       aftershow: function() {} //Function for after opening timepicker
     });*/
 
+    /**
+     * Sheet select dropdown and poll for changes
+     */
     function poll(interval) {
       interval = interval || 2000;
       setTimeout(function() {
@@ -62,11 +83,42 @@
     };
 
     function getSheets() {
-      google.script.run.withSuccessHandler(showSheetNames)
+      google.script.run.withSuccessHandler(showSheetNamesHandler)
         .getSheetNames(SHEETS);
     }
 
-    function showSheetNames(sheets) {
+
+
+    /**
+     * Event Handlers
+     */
+    $('[id^=run_]').on('click', function(e) {
+      e.preventDefault(); //prevent form from submitting
+      if(this.form.checkValidity()){
+      
+      var type = $(e.currentTarget).prop("id");
+      $('[id^=run_]').prop("disabled", true);
+      $('#loader').show();
+      progressPolling();
+      if (type === 'run_auto'){
+        google.script.run.withSuccessHandler(autoCollectSetupHandler)
+            .autoCollectSetup($(e.currentTarget).find('span').text());
+      } else { 
+        google.script.run.withSuccessHandler(collectionResultsHandler)
+          .collectionRun();
+      }
+     }
+
+    });
+
+    $('#columns_reset').on('click', function() {
+      $('#columns').val(DEFAULT_COLS).trigger("change");
+    });
+
+    /**
+     * Success Handlers
+     */
+     function showSheetNamesHandler(sheets) {
       if (sheets) {
         $('#sheetId').html('<option value="" disabled selected>Select sheet </option>');
         sheets.options.forEach(function(s) {
@@ -80,44 +132,19 @@
         SHEETS = sheets;
       }
     }
-
-    // Event Handlers
-    $('[id^=run_]').on('click', function(e) {
-      e.preventDefault(); //prevent form from submitting
-      if(this.form.checkValidity()){
-      
-      var type = $(e.currentTarget).prop("id");
-      $('[id^=run_]').prop("disabled", true);
-      $('#loader').show();
-      progressPolling();
-      if (type === 'run_auto'){
-        google.script.run.withSuccessHandler(autoCollectSetupHandler)
-            .autoCollectSetup($(e.currentTarget).find('span').text());
-      } else { 
-        google.script.run.withSuccessHandler(collectionResults)
-          .collectionRun();
-      }
-}
-
-    });
-
-    $('#columns_reset').on('click', function() {
-      $('#columns').val(DEFAULT_COLS).trigger("change");
-    });
-
-    function collectionResults(resp) {
+    
+    function collectionResultsHandler(resp) {
       console.log(resp)
       if (resp.status === 'import') {
         resp.import = true;
         resp.status = 'importing';
         progressPolling();
-        google.script.run.withSuccessHandler(collectionResults)
+        google.script.run.withSuccessHandler(collectionResultsHandler)
           .collectionRun(result);
 
       }
-      
       if (resp.result.run){
-        setLastRunTooltip(resp.result.run);
+        setLastRunTooltipHandler(resp.result.run);
       }
       $('[id^=run_]').prop("disabled", false);
       $('#loader').hide();
@@ -125,12 +152,12 @@
     
     function autoCollectSetupHandler(result) {
       console.log(result);
-      autoScheduleButton(result.data);
+      autoScheduleButtonHandler(result.data);
       $('[id^=run_]').prop("disabled", false);
       $('#loader').hide();
     }
     
-    function autoScheduleButton(canStart){
+    function autoScheduleButtonHandler(canStart){
       var action_but = $('#run_auto');
       if (canStart === 0){
         action_but.addClass('action');
@@ -143,9 +170,15 @@
       }
     }
     
-
+    function setLastRunTooltipHandler(data){
+      if (data){
+        $('[id^=run_]').attr('data-tooltip', 'Last run '+data);
+        $('.tooltipped').tooltip({delay: 100});
+      }
+    }
+    
+    // progress polling for data collection
     var progressPoller;
-
     function progressPolling(interval) {
       interval = interval || 1000;
       progressPoller = setTimeout(function() {
@@ -174,12 +207,7 @@
       }, interval);
     };
     
-    function setLastRunTooltip(data){
-      if (data){
-        $('[id^=run_]').attr('data-tooltip', 'Last run '+data);
-        $('.tooltipped').tooltip({delay: 100});
-      }
-    }
+
 
   });
 </script>

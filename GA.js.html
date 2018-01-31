@@ -6,7 +6,7 @@
     google.script.run.expose('GATracking','setNoTrackingPref', true );
     //google.script.run.trackingOptOut();
   } else {
-    google.script.run.expose('GATracking','setNoTrackingPref', false );
+    google.script.run.expose('GATracking','setNoTrackingPref', '' );
   }
 
   window.dataLayer = window.dataLayer || [];

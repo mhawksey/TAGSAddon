@@ -1,6 +1,8 @@
 var ENDPOINTS = {
   "search/tweets":{
-    name: 'Search term',
+    label: 'Search term',
+    placeholder: '#TAGS OR from:mhawksey',
+    tooltip: 'Enter a search term ',
     url: 'https://developer.twitter.com/en/docs/tweets/search/api-reference/get-search-tweets',
     rate_limit: 180,
     refresh_win: 15,
@@ -18,7 +20,9 @@ var ENDPOINTS = {
     }
   },
   "favorites/list":{
-    name: 'User likes',
+    label: 'User likes',
+    placeholder: 'mhawksey',
+    tooltip: 'Enter the screen name e.g. mhawksey',
     url: 'https://developer.twitter.com/en/docs/tweets/post-and-engage/api-reference/get-favorites-list',
     rate_limit: 75,
     refresh_win: 15,
@@ -31,7 +35,9 @@ var ENDPOINTS = {
     }
   },
   "followers/list":{
-    name: 'Followers',
+    label: 'User\'s followers',
+    placeholder: 'mhawksey',
+    tooltip: 'Enter the screen name e.g. mhawksey',
     url: 'https://developer.twitter.com/en/docs/accounts-and-users/follow-search-get-users/api-reference/get-followers-list',
     rate_limit: 15,
     refresh_win: 15,
@@ -43,7 +49,9 @@ var ENDPOINTS = {
     }
   },
   "friends/list":{
-    name: 'Following',
+    label: 'User\'s friends (following)',
+    placeholder: 'mhawksey',
+    tooltip: 'Enter the screen name e.g. mhawksey',
     url: 'https://developer.twitter.com/en/docs/accounts-and-users/follow-search-get-users/api-reference/get-friends-list',  
     rate_limit: 15,
     refresh_win: 15,
@@ -55,7 +63,9 @@ var ENDPOINTS = {
     }
   },
   "lists/members":{
-    name: 'List members',
+    label: 'List members',
+    placeholder: 'https://twitter.com/mhawksey/lists/guug11',
+    tooltip: 'Enter list url e.g. https://twitter.com/mhawksey/lists/guug11',
     url: 'https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/get-lists-members',
     rate_limit: 900,
     refresh_win: 15,
@@ -68,7 +78,9 @@ var ENDPOINTS = {
     }
   },
   "lists/statuses":{
-    name: 'List statuses',
+    label: 'List statuses',
+    placeholder: 'https://twitter.com/mhawksey/lists/guug11',
+    tooltip: 'Enter list url e.g. https://twitter.com/mhawksey/lists/guug11',
     url: 'https://developer.twitter.com/en/docs/accounts-and-users/create-manage-lists/api-reference/get-lists-statuses',
     rate_limit: 900,
     refresh_win: 15,
@@ -82,7 +94,9 @@ var ENDPOINTS = {
     }
   },
   "statuses/user_timeline":{
-    name: 'User timeline',
+    label: 'User timeline',
+    placeholder: 'mhawksey',
+    tooltip: 'Enter the screen name e.g. mhawksey',
     url: 'https://developer.twitter.com/en/docs/tweets/timelines/api-reference/get-statuses-user_timeline',
     rate_limit: 900,
     refresh_win: 15,

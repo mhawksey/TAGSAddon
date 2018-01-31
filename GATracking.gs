@@ -86,18 +86,3 @@ var GATracking = (function (ns) {
   }
   return ns;
 })(GATracking || {});
-
-/**
- * Set opt out of GA tracking.
- */
-function trackingOptOut(){
-  GATracking.setNoTrackingPref('true');
-}
-
-function test(){
-  GATracking.init('UA-48225260-5');
-  GATracking.setNoTrackingPref('false')
-  GATracking.addToGA({foo:'bar'});
-  GATracking.addToGA({foo:'bar2'});
-  GATracking.processGABatch();
-}

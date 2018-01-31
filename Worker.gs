@@ -7,7 +7,7 @@
 */
 function getTweets_(settings, doc) {
   //var queryParams = getQueryParams_(params, type);
-  var queryParams = {q: settings.tw_search_term,
+  var queryParams = {q: settings.tw_input,
                      count: 100,
                      result_type: 'recent',
                      include_entities: 1,
@@ -67,7 +67,7 @@ function getTweets_(settings, doc) {
         if (page > maxPage) done = true; // if collected 16 pages (the max) break the loop
       } 
     } //end of while loop
-    sendToGA_({t: 'event', ec: 'TAGSAddon', ea: 'Data Collection', el: 'Pages', ev:page});
+    GATracking.addToGA({t: 'event', ec: 'TAGSAddon', ea: 'Data Collection', el: 'Pages', ev:page});
     return removeDuplicates(data,'id_str');
   } catch (e) {
     Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name);

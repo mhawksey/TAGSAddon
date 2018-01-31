@@ -33,12 +33,7 @@
       <div class="row">
         <form id="basic_settings">
           <div class="row">
-            <div class="input-field col s12">
-              <select id="sheetId" name="sheetId" class="validate settings" required="" aria-required="true">
-                <option value="" disabled selected>Select sheet </option>
-              </select>
-              <label for="sheetId" data-error="A destination sheet is required">Set destination sheet</label>
-            </div>
+            
             <div class="row">
               <ul class="collapsible col s12" data-collapsible="accordion">
                 <li>
@@ -50,10 +45,21 @@
                       </select>
                       <label for="endpoint" data-error="A Twitter data type is required">Select the type of data from Twitter to import</label>
                     </div>
-                    <div class="input-field col s12">
-                      <input placeholder="#TAGS OR from:mhawksey" id="tw_search_term" type="text" class="validate settings" required="" aria-required="true">
-                      <label for="tw_search_term" data-error="A search term is required">Search term</label>
+                    <div class="input-field col s12 restrict_length">
+                      <input placeholder="#TAGS OR from:mhawksey" id="tw_input" type="text" class="validate settings tooltipped" data-length="500" data-position="bottom" data-tooltip="" required="" aria-required="true">
+                      <label for="tw_input" data-error="A term is required">Search term</label>
                     </div>
+                  </div>
+                </li>
+                <li>
+                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Destination Sheet</div>
+                  <div class="collapsible-body row">
+                  <div class="input-field col s12">
+              <select id="sheetId" name="sheetId" class="validate settings" required="" aria-required="true">
+                <option value="" disabled selected>Select sheet </option>
+              </select>
+              <label for="sheetId" data-error="A destination sheet is required">Set destination sheet</label>
+            </div>
                   </div>
                 </li>
                 <li>
@@ -138,7 +144,7 @@
                     <div class="col s12">
                       <label for="auto_export_num">Number of rows before export</label>
                       <p class="range-field">
-                        <input type="range" id="auto_export_num" min="0" max="90" step="1" class="settings" value="30" class="settings" />
+                        <input type="range" id="auto_export_num" min="10" max="90" step="1" class="settings" value="30" class="settings" />
                       </p>
                       <p><em>Note: Google Sheets currently has a 2 million cell limit. Enabling this option will batch export data. An email notifcation will be sent when data is exported. Only the archive sheet will be exported</em></p>
                     </div>
@@ -182,7 +188,7 @@
   var use_default_cols = '<?= use_default_cols ?>' == 'true'; // default columns for archive
   var auto_collect = '<?= auto_collect ?>' == 'true'; // default columns for archive
 </script>
-<?!= Include.gs(['i18n','helpers','Columns']); ?>
+<?!= Include.gs(['i18n','helpers','Settings']); ?>
   <?!= Include.js(['collection']); ?>
 
 </html>

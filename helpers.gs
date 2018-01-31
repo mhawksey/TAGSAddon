@@ -75,6 +75,9 @@ script.handleSettings = function(setting) {
         if (setting.value){
           $('#' + setting.id + ' option[value="' + setting.value + '"]').prop('selected', 'selected');
           $('select').material_select();
+          if (setting.id === 'endpoint'){
+            $('#endpoint').trigger('change');
+          }
         }
         break;
       case 'text':

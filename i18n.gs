@@ -1,5 +1,5 @@
 var i18n = {
-  "Setup Twitter Access": {
+  "Setup Twitter": {
     "en": "Setup Twitter",
     "desc": "Nav Menu item"
   },

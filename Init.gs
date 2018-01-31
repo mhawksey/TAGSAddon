@@ -11,17 +11,18 @@ var GA_BATCH = [];
  * @param {Object} e The event parameter for a simple onOpen trigger.
  */
 function onOpen(e) {
-  var service = getTwitterService_();
   var ui = SpreadsheetApp.getUi();
-  var menu = ui.createAddonMenu()
-      .addItem(script.i18n.getMessage('Setup Twitter', LANG), 'showSidebarSetup');
-  if (service.hasAccess()){
+  var menu = ui.createAddonMenu();
+  if (e && e.authMode !== ScriptApp.AuthMode.NONE) {
+    GATracking.init('UA-48225260-5');
+    menu.addItem(script.i18n.getMessage('Setup Twitter', LANG), 'showSidebarSetup');
+    if (getTwitterService_().hasAccess()){
       menu.addItem(script.i18n.getMessage('Collection', LANG), 'showSidebarCollection');
-  }
+    }
+  } 
   menu.addSubMenu(ui.createMenu('Utilities')
           .addItem('Wipe Sheet', 'wipeArchive'))
   menu.addToUi();
-  
 }
 
 /**
