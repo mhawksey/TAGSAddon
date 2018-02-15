@@ -1,73 +1,87 @@
 <script>
   $(function() {
-  /**
-   * Initialisation
-   */
+    /**
+     * Initialisation
+     */
     poll();
     var SHEETS = {};
-    var DEFAULT_COLS = [];
+    var DEFAULT_COLS = {};
     script.settingsSave('doc', 'collect');
 
     getSheets(); // populate sheets select
-    
+
     // Collection submit button setup
     autoScheduleButtonHandler(auto_collect);
     google.script.run.withSuccessHandler(setLastRunTooltipHandler).lastRun();
-    
+
     // data range mod for sheet export value
     $('#auto_export_num').on("change click input", function(e) {
-            var i = $(this).siblings(".thumb");
-            i.find(".value").html($(this).val()+'K');
+      var i = $(this).siblings(".thumb");
+      i.find(".value").html($(this).val() + 'K');
     });
     
-    // setting up columns selection and defaults
-    $.map(COLS['statuses'], function(grp) {
-      $.map(grp.children, function(obj) {
-        obj.text = obj.id;
-        if (use_default_cols && obj.is_default) {
-          obj.selected = true;
-        } 
-        if (obj.is_default) {
-          DEFAULT_COLS.push(obj.id);
-        }
+    // setup data column select
+    $.each(COLS, function(idx, COL) {
+      DEFAULT_COLS[idx] = [];
+      $('#' + idx + '_columns_reset').on('click', function() {
+        $('#' + idx + '_columns').val(DEFAULT_COLS[idx]).trigger("change");
       });
+      $.map(COLS[idx], function(grp) {
+        $.map(grp.children, function(obj) {
+          obj.text = obj.id;
+          if (use_default_cols && obj.is_default) {
+            obj.selected = true;
+          }
+          if (obj.is_default) {
+            DEFAULT_COLS[idx].push(obj.id);
+          }
+        });
 
+      });
+      $('#' + idx + '_columns').select2({
+        data: COLS[idx]
+      });
     });
-    $('#columns').select2({
-      data: COLS['statuses']
-    });
-    
+
     $('#tw_input').characterCounter()
-    
+
     // setup different data collection types
     var endpoint_select = $('#endpoint');
     $.each(ENDPOINTS, function(idx) {
-      endpoint_select.append($('<option>', { value: idx })
-          .text(ENDPOINTS[idx].label))
+      endpoint_select.append($('<option>', {
+          value: idx
+        })
+        .text(ENDPOINTS[idx].label))
     });
-    
+
     endpoint_select.on('change', function(e) {
       var endpoint = ENDPOINTS[$(this).val()];
       $('#tw_input').attr('placeholder', endpoint.placeholder)
-                    .attr('data-tooltip', endpoint.tooltip); 
+        .attr('data-tooltip', endpoint.tooltip);
       $('label[for="tw_input"]').text(endpoint.label);
-      $('.tooltipped').tooltip({delay: 100});
-      if ($(this).val() === 'search/tweets'){
-        $('#limit_collection').removeClass('disabled');
+      $('.tooltipped').tooltip({
+        delay: 100
+      });
+      if ($(this).val() === 'search/tweets') {
+        $('#sec_limit_collection').removeClass('disabled');
+        $('#sec_status_cols').removeClass('disabled');
+        $('#sec_user_cols').addClass('disabled');
       } else {
-        $('#limit_collection').addClass('disabled');
+        $('#sec_limit_collection').addClass('disabled');
+        $('#sec_status_cols').addClass('disabled');
+        $('#sec_user_cols').removeClass('disabled');
       }
-      
+
     });
-    
+
     // prevent expand on disabled collapsibles
-    $('.collapsible .collapsible-header').on('click', function(e){
+    $('.collapsible .collapsible-header').on('click', function(e) {
       if ($(e.currentTarget).parent().hasClass('disabled')) {
         e.preventDefault();
         e.stopPropagation();
       }
-    }); 
-    
+    });
+
     /*
     $('#end_collect_time_in').pickatime({
       default: 'now', // Set default time: 'now', '1:30AM', '16:30'
@@ -106,44 +120,42 @@
      */
     $('[id^=run_]').on('click', function(e) {
       e.preventDefault(); //prevent form from submitting
-      if(!this.form.checkValidity()){
-      $(this.form).find(':invalid').each(function(index, node) {
-        if (index === 0){
-          var label = $('label[for=' + node.id + ']')
-        console.log(label.attr('data-error'))
-          var colapse = $(node).closest('.collapsible-body').closest('li');
-          var idx = colapse.index();
-          var curIdx = $('.collapsible li.active').index();
-          if (curIdx !== idx){
-            $('.collapsible').collapsible('open', idx);
+      if (!this.form.checkValidity()) {
+        $(this.form).find(':invalid').each(function(index, node) {
+          if (index === 0) {
+            var label = $('label[for=' + node.id + ']')
+            console.log(label.attr('data-error'))
+            var colapse = $(node).closest('.collapsible-body').closest('li');
+            var idx = colapse.index();
+            var curIdx = $('.collapsible li.active').index();
+            if (curIdx !== idx) {
+              $('.collapsible').collapsible('open', idx);
+            }
           }
-        }
         });
       } else {
-      
-      var type = $(e.currentTarget).prop("id");
-      $('[id^=run_]').prop("disabled", true);
-      $('#loader').show();
-      progressPolling();
-      if (type === 'run_auto'){
-        google.script.run.withSuccessHandler(autoCollectSetupHandler)
+
+        var type = $(e.currentTarget).prop("id");
+        $('[id^=run_]').prop("disabled", true);
+        $('#loader').show();
+        progressPolling();
+        if (type === 'run_auto') {
+          google.script.run.withSuccessHandler(autoCollectSetupHandler)
             .autoCollectSetup($(e.currentTarget).find('span').text());
-      } else { 
-        google.script.run.withSuccessHandler(collectionResultsHandler)
-          .collectionRun();
+        } else {
+          google.script.run.withSuccessHandler(collectionResultsHandler)
+            .collectionRun();
+        }
       }
-     }
 
     });
 
-    $('#columns_reset').on('click', function() {
-      $('#columns').val(DEFAULT_COLS).trigger("change");
-    });
+
 
     /**
      * Success Handlers
      */
-     function showSheetNamesHandler(sheets) {
+    function showSheetNamesHandler(sheets) {
       if (sheets) {
         $('#sheetId').html('<option value="" disabled selected>Select sheet</option>');
         //$('#sheetId').html('');
@@ -159,7 +171,7 @@
         SHEETS = sheets;
       }
     }
-    
+
     function collectionResultsHandler(resp) {
       console.log(resp)
       if (resp.status === 'import') {
@@ -170,23 +182,23 @@
           .collectionRun(result);
 
       }
-      if (resp.result.run){
+      if (resp.result.run) {
         setLastRunTooltipHandler(resp.result.run);
       }
       $('[id^=run_]').prop("disabled", false);
       $('#loader').hide();
     }
-    
+
     function autoCollectSetupHandler(result) {
       console.log(result);
       autoScheduleButtonHandler(result.data);
       $('[id^=run_]').prop("disabled", false);
       $('#loader').hide();
     }
-    
-    function autoScheduleButtonHandler(canStart){
+
+    function autoScheduleButtonHandler(canStart) {
       var action_but = $('#run_auto');
-      if (canStart === 0){
+      if (canStart === 0) {
         action_but.addClass('action');
         action_but.removeClass('create');
         action_but.find('span').text('Start');
@@ -196,16 +208,19 @@
         action_but.find('span').text('Stop');
       }
     }
-    
-    function setLastRunTooltipHandler(data){
-      if (data){
-        $('[id^=run_]').attr('data-tooltip', 'Last run '+data);
-        $('.tooltipped').tooltip({delay: 100});
+
+    function setLastRunTooltipHandler(data) {
+      if (data) {
+        $('[id^=run_]').attr('data-tooltip', 'Last run ' + data);
+        $('.tooltipped').tooltip({
+          delay: 100
+        });
       }
     }
-    
+
     // progress polling for data collection
     var progressPoller;
+
     function progressPolling(interval) {
       interval = interval || 1000;
       progressPoller = setTimeout(function() {
@@ -233,7 +248,7 @@
         progressPolling();
       }, interval);
     };
-    
+
 
 
   });

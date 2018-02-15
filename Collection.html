@@ -57,7 +57,7 @@
                     </div>
                   </div>
                 </li>
-                <li id="limit_collection">
+                <li id="sec_limit_collection">
                   <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Limit Collection</div>
                   <div class="collapsible-body row">
                     <div class="col s12">
@@ -82,14 +82,25 @@
                     </div>
                   </div>
                 </li>
-                <li>
-                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Data Columns</div>
+                <li id="sec_status_cols">
+                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Statuses Data Columns</div>
                   <div class="collapsible-body row">
                     <div class="input-field col s12">
-                      <label for="columns">Select data columns </label>
-                      <div id="columns_reset">(<a>defaults</a>)</div>
-                      <select multiple="multiple" id="columns" class="settings"></select>
+                      <label for="status_columns">Select data columns </label>
+                      <div id="status_columns_reset">(<a>defaults</a>)</div>
+                      <select multiple="multiple" id="status_columns" class="settings"></select>
                       <p><em>Note: New columns added after collection has started will not be populated with data. <code>id_str</code> is a required column and is added automatically</em></p>
+                    </div>
+                  </div>
+                </li>
+                <li id="sec_user_cols">
+                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>User Data Columns</div>
+                  <div class="collapsible-body row">
+                    <div class="input-field col s12">
+                      <label for="users_columns">Select data columns </label>
+                      <div id="users_columns_reset">(<a>defaults</a>)</div>
+                      <select multiple="multiple" id="users_columns" class="settings"></select>
+                      <p><em></em></p>
                     </div>
                   </div>
                 </li>
@@ -176,8 +187,8 @@
   <?!= Include.html(['footer']); ?>
 </body>
 <script>
-  var use_default_cols = '<?= use_default_cols ?>' == 'true'; // default columns for archive
-  var auto_collect = '<?= auto_collect ?>' == 'true'; // default columns for archive
+  var use_default_cols = '<?= use_default_cols ?>' == 'true'; // default status_columns for archive
+  var auto_collect = '<?= auto_collect ?>' == 'true'; // auto collect status
 </script>
   <?!= Include.gs(['i18n','helpers','Settings']); ?>
   <?!= Include.js(['collection']); ?>

@@ -103,11 +103,14 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
   if (!action.import){
     // if not importing TAGS setup the archive sheet
     // created header
-    var cols_arr = getDocProp_('columns').split(',');
+    
     
     // if not a users import add an id_str column
     if (endpoint.dataPath !== 'users'){
+      var cols_arr = settings.status_columns.split(',');
       cols_arr.unshift('id_str');
+    } else {
+      var cols_arr = settings.users_columns.split(',');
     }
     sheet.getRange(1, 1, 1, cols_arr.length).setValues([cols_arr]);
     // remove extra extra row/cols
@@ -157,7 +160,7 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
   var heads = sheet.getDataRange()
                    .offset(0, 0, 1)
                    .getValues()[0];
-  var cols_arr = settings.columns.split(',');
+  var cols_arr = settings.status_columns.split(',');
   // if not a users import add an id_str column
   if (endpoint.dataPath !== 'users'){
     cols_arr.unshift('id_str');
