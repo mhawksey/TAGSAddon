@@ -1,3 +1,9 @@
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+<style>
 body {
 margin-bottom: 45px;
 line-height: 1.5;
@@ -101,6 +107,10 @@ font-weight:500;
 border-bottom: none;
 }
 
+.collapsible li.disabled .collapsible-header {
+color: rgba(0, 0, 0, 0.2);
+}
+
 .collapsible li i {
 -webkit-transition: all 250ms cubic-bezier(0.4, 0.0, 0.2, 1);
 -moz-transition: all 250ms cubic-bezier(0.4, 0.0, 0.2, 1);
@@ -126,8 +136,9 @@ border-right: none;
 }
 
 /* label color */
-label {
-color: #616161 !important;
+.input-field label {
+color: #616161;
+font-size: 0.8rem;
 }
 
 label[for=columns] {
@@ -293,3 +304,4 @@ fill: #4285f4;
 .clockpicker-tick.active, .clockpicker-tick:hover {
     background-color: rgba(66, 133, 244, 0.25);
 }
+</style>

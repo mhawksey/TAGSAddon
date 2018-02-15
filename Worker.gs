@@ -6,29 +6,50 @@
 * @param {string} type The type of API call to do.
 */
 function getTweets_(settings, doc) {
-  //var queryParams = getQueryParams_(params, type);
-  var queryParams = {q: settings.tw_input,
-                     count: 100,
-                     result_type: 'recent',
-                     include_entities: 1,
-                     since_id: settings.since_id || 0
-                    };
-  // prepare search term
-  if (settings.tw_period && settings.tw_period !== 'default'){
+  var endpoint = ENDPOINTS[settings.endpoint];
+  var queryParams = JSON.stringify(endpoint.params);
+  
+  // add tw_input to params
+  if (queryParams.indexOf('tw_input_parse') !== -1){
+    // handle lists
+    var paths = settings.tw_input.split('/');
+    var listIdx = paths.indexOf('lists');
+    queryParams = queryParams.replace('tw_input_parse_screen_name',paths[listIdx-1])
+                             .replace('tw_input_parse_slug',paths[listIdx+1]);
+  } else {
+    // handle everything else
+    queryParams = queryParams.replace('tw_input', escapeSpecialChars_(settings.tw_input));
+  }
+  queryParams = JSON.parse(queryParams); 
+  
+  queryParams.since_id = settings.since_id || null;
+  queryParams.cursor = settings.cursor || null;
+  
+  // if search prepare period if set
+  if (settings.endpoint === 'search/tweets' && settings.tw_period && settings.tw_period !== 'default'){
     var period = parseInt(settings.tw_period);
     var until=new Date();
     until.setDate(until.getDate()-period);
     queryParams.until = twDate_(until);
   }
   
+  // add extra params to query
   if (settings.tw_adv_params){
     var extraParams = JSON.parse(settings.tw_adv_params);
     // https://stackoverflow.com/a/171256
     for (var a in extraParams) { queryParams[a] = extraParams[a]; }
   }
+  
+  //stripe any blank queryParams
+  queryParams = removeEmpty_(queryParams);
+  
+  // calculate number of pages
   var numTweets = parseInt(settings.tw_num_of_tweets);
-  if (numTweets > 18000)  numTweets = 18000;
+  var maxTweets = endpoint.rate_limit * queryParams.count;
+  if (numTweets > maxTweets)  numTweets = maxTweets;
   var maxPage = Math.ceil(numTweets/queryParams.count);
+  
+  
   var data = [];
   var idx = 0;
   try {
@@ -37,26 +58,32 @@ function getTweets_(settings, doc) {
     var page = 1;
     var done = false;
     var maxid_str = "";
-    console.log({call: 'search/tweets', queryParams: queryParams});
+    console.log({call: settings.endpoint, queryParams: queryParams});
     while(!done){
-      var responseData = get('search/tweets', queryParams);
-      
+      var response = get(settings.endpoint, queryParams);
       putDocumentCache('collectionRun', {stage: 'get-tweets',data:parseInt(page/maxPage*100)});
-      if (responseData.message){
-        Logger.log(responseData.message);
-        Browser.msgBox("Error", responseData.message, Browser.Buttons.OK);
+      if (response.message){
+        console.error("Error", response)
+        Browser.msgBox("Error", response.message, Browser.Buttons.OK);
         done = true;
       } else {
-        if (responseData.statuses !== undefined){
-          var objects = responseData.statuses;
+        if (endpoint.dataPath){
+          var objects = response[endpoint.dataPath];
         } else {
-          var objects = responseData;
+          var objects = response;
         }
-        if (objects.length>0){ // if data returned
-          for (i in objects){
+        var objLen = objects.length
+        if (objLen>0){ // if data returned
+          
+          for (var i=0; i < objLen; i++){
             data.push(flattenDataFast_(objects[i]));
           }
-          queryParams.max_id = objects[objects.length-1]["id_str"];
+          
+          if (endpoint.dataPath === 'users'){
+            queryParams.cursor = response.next_cursor_str;
+          } else {
+            queryParams.max_id = objects[objects.length-1]["id_str"];
+          }
 
         } else { // if not data break the loop
           Logger.log("no objects");
@@ -67,9 +94,10 @@ function getTweets_(settings, doc) {
         if (page > maxPage) done = true; // if collected 16 pages (the max) break the loop
       } 
     } //end of while loop
-    GATracking.addToGA({t: 'event', ec: 'TAGSAddon', ea: 'Data Collection', el: 'Pages', ev:page});
-    return removeDuplicates(data,'id_str');
+    GATracking.addToGA({t: 'event', ec: 'TAGSAddon', ea: settings.endpoint, el: 'Pages', ev:page});
+    return removeDuplicates_(data,'id_str');
   } catch (e) {
+    GATracking.addToGA({t: 'exception', exd: 'Line '+e.lineNumber+' '+e.message});
     Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name);
     return data;
   }

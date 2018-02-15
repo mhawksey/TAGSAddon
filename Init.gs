@@ -19,9 +19,13 @@ function onOpen(e) {
     if (getTwitterService_().hasAccess()){
       menu.addItem(script.i18n.getMessage('Collection', LANG), 'showSidebarCollection');
     }
-  } 
-  menu.addSubMenu(ui.createMenu('Utilities')
-          .addItem('Wipe Sheet', 'wipeArchive'))
+  }
+  var utilMenu = ui.createMenu('Utilities')
+                   .addItem('Wipe Sheet', 'wipeArchive')
+  if (getTwitterService_().hasAccess()){
+    utilMenu.addItem('Quota', 'testRate')
+  }
+  menu.addSubMenu(utilMenu);
   menu.addToUi();
 }
 
@@ -88,6 +92,17 @@ function wipeArchive(){
     sheet.deleteRows(2, sheet.getLastRow()-1);
     showSidebarCollection();
   } 
+}
+
+/**
+* Test rate limits from Twitter.
+*
+* @return {Object} data of Twitter rates
+*/
+function testRate(){
+  //var api_request = "application/rate_limit_status.json?resources=users,search,statuses";
+  var data = get("application/rate_limit_status", {'resources': 'users,search,statuses'});
+  Browser.msgBox(JSON.stringify(data));
 }
 
 

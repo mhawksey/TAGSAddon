@@ -21,7 +21,7 @@
     });
     
     // setting up columns selection and defaults
-    $.map(COLS['search/tweets'], function(grp) {
+    $.map(COLS['statuses'], function(grp) {
       $.map(grp.children, function(obj) {
         obj.text = obj.id;
         if (use_default_cols && obj.is_default) {
@@ -34,7 +34,7 @@
 
     });
     $('#columns').select2({
-      data: COLS['search/tweets']
+      data: COLS['statuses']
     });
     
     $('#tw_input').characterCounter()
@@ -52,9 +52,21 @@
                     .attr('data-tooltip', endpoint.tooltip); 
       $('label[for="tw_input"]').text(endpoint.label);
       $('.tooltipped').tooltip({delay: 100});
-      console.log(endpoint);
+      if ($(this).val() === 'search/tweets'){
+        $('#limit_collection').removeClass('disabled');
+      } else {
+        $('#limit_collection').addClass('disabled');
+      }
+      
     });
     
+    // prevent expand on disabled collapsibles
+    $('.collapsible .collapsible-header').on('click', function(e){
+      if ($(e.currentTarget).parent().hasClass('disabled')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }); 
     
     /*
     $('#end_collect_time_in').pickatime({
@@ -94,7 +106,20 @@
      */
     $('[id^=run_]').on('click', function(e) {
       e.preventDefault(); //prevent form from submitting
-      if(this.form.checkValidity()){
+      if(!this.form.checkValidity()){
+      $(this.form).find(':invalid').each(function(index, node) {
+        if (index === 0){
+          var label = $('label[for=' + node.id + ']')
+        console.log(label.attr('data-error'))
+          var colapse = $(node).closest('.collapsible-body').closest('li');
+          var idx = colapse.index();
+          var curIdx = $('.collapsible li.active').index();
+          if (curIdx !== idx){
+            $('.collapsible').collapsible('open', idx);
+          }
+        }
+        });
+      } else {
       
       var type = $(e.currentTarget).prop("id");
       $('[id^=run_]').prop("disabled", true);
@@ -120,7 +145,8 @@
      */
      function showSheetNamesHandler(sheets) {
       if (sheets) {
-        $('#sheetId').html('<option value="" disabled selected>Select sheet </option>');
+        $('#sheetId').html('<option value="" disabled selected>Select sheet</option>');
+        //$('#sheetId').html('');
         sheets.options.forEach(function(s) {
           $('#sheetId')
             .append($('<option></option>')
@@ -129,6 +155,7 @@
         });
         $('#sheetId option[value=' + sheets.selected + ']').prop('selected', 'selected');
         $('select').material_select();
+        // $("select[required]").css({display: "block", height: 0, padding: 0, width: 0, position: 'absolute'});
         SHEETS = sheets;
       }
     }

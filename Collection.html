@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <base target="_top">
   <script>
@@ -8,14 +7,10 @@
     var PAGE_URL = '<?= page_url ?>';
   </script>
   <?!= Include.js(['GA']); ?>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+  <?!= Include.html(['import_material']); ?>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ifvisible/1.0.6/ifvisible.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-    <?!= Include.css(['style','select2-materialize']); ?>
+    <?!= Include.css(['select2-materialize']); ?>
 </head>
 
 <body>
@@ -33,7 +28,7 @@
       <div class="row">
         <form id="basic_settings">
           <div class="row">
-            
+
             <div class="row">
               <ul class="collapsible col s12" data-collapsible="accordion">
                 <li>
@@ -54,15 +49,15 @@
                 <li>
                   <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Destination Sheet</div>
                   <div class="collapsible-body row">
-                  <div class="input-field col s12">
-              <select id="sheetId" name="sheetId" class="validate settings" required="" aria-required="true">
-                <option value="" disabled selected>Select sheet </option>
+                    <div class="input-field col s12">
+                      <select id="sheetId" name="sheetId" class="validate settings" required="" aria-required="true">
+                
               </select>
-              <label for="sheetId" data-error="A destination sheet is required">Set destination sheet</label>
-            </div>
+                      <label for="sheetId" data-error="A destination sheet is required">Set destination sheet</label>
+                    </div>
                   </div>
                 </li>
-                <li>
+                <li id="limit_collection">
                   <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Limit Collection</div>
                   <div class="collapsible-body row">
                     <div class="col s12">
@@ -144,7 +139,7 @@
                     <div class="col s12">
                       <label for="auto_export_num">Number of rows before export</label>
                       <p class="range-field">
-                        <input type="range" id="auto_export_num" min="10" max="90" step="1" class="settings" value="30" class="settings" />
+                        <input type="range" id="auto_export_num" min="10" max="100" step="1" class="settings" value="30" class="settings" />
                       </p>
                       <p><em>Note: Google Sheets currently has a 2 million cell limit. Enabling this option will batch export data. An email notifcation will be sent when data is exported. Only the archive sheet will be exported</em></p>
                     </div>
@@ -178,17 +173,12 @@
       </ul>
     </div>
   </div>
-  <footer class="page-footer blue">
-    <div class="footer-copyright">
-      <div class="container"> Developed by @mhawksey <a class="grey-text text-lighten-4 right" href="https://tags.hawksey.info">Visit Site</a> </div>
-    </div>
-  </footer>
+  <?!= Include.html(['footer']); ?>
 </body>
 <script>
   var use_default_cols = '<?= use_default_cols ?>' == 'true'; // default columns for archive
   var auto_collect = '<?= auto_collect ?>' == 'true'; // default columns for archive
 </script>
-<?!= Include.gs(['i18n','helpers','Settings']); ?>
+  <?!= Include.gs(['i18n','helpers','Settings']); ?>
   <?!= Include.js(['collection']); ?>
-
 </html>

@@ -4,11 +4,13 @@
   window.openTab = function() {
     $('#signin').prop("disabled", true);
     $('#loader').show();
+    gtag('event', 'sign_up' { 'method' : 'Twitter' });
     window.open(authUrl, target = "_blank");
   };
 
   window.disconnect = function() {
     $('#signout').prop("disabled", true);
+    gtag('event', 'sign_out' { 'method' : 'Twitter' });
     google.script.run.withSuccessHandler(function(url) {
       authUrl = url;
       $('#signin, #signout').toggle();

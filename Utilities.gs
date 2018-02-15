@@ -43,44 +43,41 @@ function flattenDataFast_(ob){
   return p;
 }
 
-function validSheetMetadata_(doc, sheet, settings, action, fnLabel){
+function validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel){
   // if metadata check sheet id hasn't changed
-  if (settings.metadataId){
+  if (!settings.metadataId){
+    return setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel)
+  } else {
     try {
       var meta = Sheets.Spreadsheets.DeveloperMetadata.get (doc.getId() , settings.metadataId);
       var saved_sheet_id = meta.location.dimensionRange.sheetId.toString() || "0";
       var id_str_col_idx = meta.location.dimensionRange.startIndex;
-      var id_str = sheet.getRange(1, id_str_col_idx+1).getValue();
-      if (id_str !== 'id_str'){
+      var metadataValue = JSON.parse(meta.metadataValue);
+      var meta_endpoint = metadataValue.endpoint;
+      var meta_cursor = metadataValue.cursor;
+      
+      if (settings.endpoint !== meta_endpoint || saved_sheet_id !== settings.sheetId){
         setDocProp_('metadataId','');
         putDocumentCache(fnLabel, {stage: 'restart'});
-        return collectionRun();
+        return setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel);
       }
     } catch(e) {
       // sheet probably deleted so remove metadataId
       setDocProp_('metadataId','');
       putDocumentCache(fnLabel, {stage: 'restart-error'});
-      return collectionRun();
+      return setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel);
     }
   }
-  if (!settings.metadataId || saved_sheet_id !== settings.sheetId) {
-    setupArchiveSheet_(doc, sheet, settings, action, fnLabel);
+  if (endpoint.dataPath !== 'users'){
+    return parseInt(id_str_col_idx);
+  } else {
+    return meta_cursor;
   }
-  setDocProp_('id_str_col_idx', id_str_col_idx);
-  return true;
 }
 
-function deleteAllTriggers_(debug){
-  if (!debug) {
-    var triggers = ScriptApp.getUserTriggers(SpreadsheetApp.getActive());
-    for (var t = 0; t < triggers.length; i++) {
-      ScriptApp.deleteTrigger(triggers[t]);
-    }
-  }
-  setDocProp_('triggers','');
-}
 
-function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
+
+function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
   // if no metadata or sheet has changed
   putDocumentCache(fnLabel, {stage: 'setup'});
   var id_str = sheet.getRange(1, 1).getValue();
@@ -91,25 +88,27 @@ function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
       return Browser.msgBox("The sheet '"+sheet.getName()+"' isn't empty or an existing TAGS archive with an id_str column. Please wipe this sheet or select another", 
         Browser.Buttons.OK);
     }
-  } else if(id_str === 'id_str' && !action.import) {
+  } else if(id_str === 'id_str') {
     // there is an id_str so see if it should be imported for setup
     var import = Browser.msgBox("The sheet '"+sheet.getName()+"' looks like an old TAGS archive. Do you wish to use with the TAGS Add-on?", 
       Browser.Buttons.YES_NO);
-    if (import === 'yes'){
-      return {status: 'import'};  
+    if (import === 'yes'){ 
+      action.import = true;
     } else {
       return {status: 'no-import'};
     }
     
   } 
   // at this point sheet is either empty or has an old archive so write the metadata
-  
   if (!action.import){
     // if not importing TAGS setup the archive sheet
     // created header
     var cols_arr = getDocProp_('columns').split(',');
     
-    cols_arr.unshift('id_str');
+    // if not a users import add an id_str column
+    if (endpoint.dataPath !== 'users'){
+      cols_arr.unshift('id_str');
+    }
     sheet.getRange(1, 1, 1, cols_arr.length).setValues([cols_arr]);
     // remove extra extra row/cols
     sheet.deleteColumns(cols_arr.length+1, sheet.getMaxColumns() - sheet.getLastColumn());
@@ -118,8 +117,7 @@ function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
     sheet.setFrozenRows(1);
     // format cells
     sheet.getRange('1:2').setFontSize(8);
-    sheet.getRange('A:A').setBackground('#efefef').setNumberFormat("@");
-    
+    sheet.getRange('A:A').setBackground('#efefef').setNumberFormat("@"); 
     formatSheet_(sheet);   
   }
   
@@ -134,7 +132,9 @@ function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
         metadataKey:"id_str_col",
         metadataValue:JSON.stringify({
           writtenBy:Session.getActiveUser().getEmail(),
-          createdAt:new Date().getTime()
+          createdAt:new Date().getTime(),
+          endpoint: settings.endpoint,
+          cursor: -1
         }),
         location:{  
           dimensionRange: {
@@ -150,14 +150,18 @@ function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
   var meta = Sheets.Spreadsheets.batchUpdate({requests:requests},doc.getId());
   settings.metadataId = meta.replies[0].createDeveloperMetadata.developerMetadata.metadataId.toString();
   setDocProp_('metadataId',settings.metadataId);
+  //setDocProp_('id_str_col_idx', 0);
   
   // check headings match user selected
   // these are the heads
   var heads = sheet.getDataRange()
-  .offset(0, 0, 1)
-  .getValues()[0];
-  var cols_arr = settings.columns.split(',')
-  cols_arr.unshift('id_str');
+                   .offset(0, 0, 1)
+                   .getValues()[0];
+  var cols_arr = settings.columns.split(',');
+  // if not a users import add an id_str column
+  if (endpoint.dataPath !== 'users'){
+    cols_arr.unshift('id_str');
+  }
   var new_cols_arr = cols_arr.filter(function(val) {
     return heads.indexOf(val) == -1;
   });
@@ -165,6 +169,7 @@ function setupArchiveSheet_(doc, sheet, settings, action, fnLabel){
     sheet.getRange(1, sheet.getLastColumn()+1, 1, new_cols_arr.length).setValues([new_cols_arr]);
     formatSheet_(sheet);
   }
+  validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel);
 }
 
 function formatSheet_(sheet){
@@ -182,6 +187,16 @@ function formatSheet_(sheet){
       sheet.getRange(1, h+1, sheet.getMaxRows()).setWrap(true);
     }
   }
+}
+
+function deleteAllTriggers_(debug){
+  if (!debug) {
+    var triggers = ScriptApp.getUserTriggers(SpreadsheetApp.getActive());
+    for (var t = 0; t < triggers.length; i++) {
+      ScriptApp.deleteTrigger(triggers[t]);
+    }
+  }
+  setDocProp_('triggers','');
 }
 
 function setRowsData_(sheet, data){
@@ -214,7 +229,7 @@ function isSheetEmpty_(sheet) {
  * @param prop - Property of each object to compare
  * @returns {Array}
  */
-function removeDuplicates( arr, prop ) {
+function removeDuplicates_( arr, prop ) {
   var obj = {};
   for ( var i = 0, len = arr.length; i < len; i++ ){
     if(!obj[arr[i][prop]]) obj[arr[i][prop]] = arr[i];
@@ -262,7 +277,7 @@ function getDocProp_(key){
     var value = PropertiesService.getDocumentProperties().getProperty(key);
     CacheService.getDocumentCache().put(key, value, 86400);
   }
-  console.log({getDocProp: key, value: value});
+  //console.log({getDocProp: key, value: value});
   return value;
 }
 /**
@@ -271,14 +286,11 @@ function getDocProp_(key){
  */
 function getDocProps_(){
   var value = JSON.parse(CacheService.getDocumentCache().get('ALL'));
-  //console.log({getDocProps: 'ALL-cache', value: value});
-  //console.log({getDocProps: 'ALL-getProperties', value: PropertiesService.getDocumentProperties().getProperties()});
   if (!value){
     var value = PropertiesService.getDocumentProperties().getProperties();
-    //console.log({getDocProps: 'ALL-getProperties', value: value});
     CacheService.getDocumentCache().put('ALL', JSON.stringify(value), 86400);
   }
-  
+  console.log({getDocProps: 'ALL-cache', value: value});
   return value;
 }
 
@@ -319,4 +331,24 @@ function getConsumer_(key){
   // try user prop fallback on script prop
   return getUserProp_(key) || getScriptProp_(key);
 }
+
+function escapeSpecialChars_(str) {
+  return str.replace(/[\\]/g, '\\\\')
+            .replace(/[\"]/g, '\\\"')
+            .replace(/[\/]/g, '\\/')
+            .replace(/[\b]/g, '\\b')
+            .replace(/[\f]/g, '\\f')
+            .replace(/[\n]/g, '\\n')
+            .replace(/[\r]/g, '\\r')
+            .replace(/[\t]/g, '\\t');
+};
+
+//https://stackoverflow.com/a/38340730
+function removeEmpty_(obj) {
+  Object.keys(obj).forEach(function(key) {
+    (obj[key] && typeof obj[key] === 'object') && removeEmpty(obj[key]) ||
+    (obj[key] === undefined || obj[key] === null) && delete obj[key]
+  });
+  return obj;
+};
 

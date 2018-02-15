@@ -3,17 +3,12 @@
 
 <head>
   <base target="_top">
-    <script>
+  <script>
     var PAGE_TITLE = '<?= page_title ?>';
     var PAGE_URL = '<?= page_url ?>';
   </script>
   <?!= Include.js(['GA']); ?>
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
-  <?!= Include.css(['style']); ?>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+  <?!= Include.html(['import_material']); ?>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/intercom.js/0.1.4/intercom.min.js"></script>
 </head>
 
@@ -71,11 +66,7 @@
       </div>
     
   </div>
-  <footer class="page-footer blue">
-    <div class="footer-copyright">
-      <div class="container"> Developed by @mhawksey <a class="grey-text text-lighten-4 right" href="https://tags.hawksey.info">Visit Site</a> </div>
-    </div>
-  </footer>
+  <?!= Include.html(['footer']); ?>
 </body>
 <script>
   var isSignedIn = '<?= isSignedIn ?>' == 'true';

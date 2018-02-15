@@ -6,6 +6,7 @@ function collectionRun(action) {
   var action = action || {};
   // get existing settings
   var settings = getDocProps_();
+  var endpoint = ENDPOINTS[settings.endpoint]
   var doc = SpreadsheetApp.getActive();
   var sheets = doc.getSheets();
   // get sheet object from sidebar selection
@@ -14,24 +15,26 @@ function collectionRun(action) {
   }
   var sheet = sheets[n];
   
-  if (!validSheetMetadata_(doc, sheet, settings, action, fnLabel)){
-    setupArchiveSheet_(doc, sheet, settings, action, fnLabel)
-  }
+  var cursor = validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel);
   
-  var id_str_col_idx = parseInt(getDocProp_('id_str_col_idx')) || 0;
-  
-  // getting data part
-  var since_id = 0;
-  // find first id_str value
-  var id_strs = sheet.getRange(2, id_str_col_idx+1, settings.tw_num_of_tweets).getValues();
-  for (r in id_strs){
-    if (id_strs[r][0] !== ""){
-      settings.since_id = id_strs[r][0];
-      break;
+  if (endpoint.dataPath !== 'users'){
+    var id_str_col_idx = cursor || 0;
+    
+    // getting data part
+    var since_id = 0;
+    // find first id_str value
+    var id_strs = sheet.getRange(2, id_str_col_idx+1, settings.tw_num_of_tweets).getValues();
+    for (r in id_strs){
+      if (id_strs[r][0] !== ""){
+        settings.since_id = id_strs[r][0];
+        break;
+      }
     }
+  } else {
+    settings.cursor = cursor;
   }
   putDocumentCache(fnLabel, {stage: 'getting-data'});
-  //doc.toast("Getting data...", "TAGS");
+  doc.toast("Getting data...", "TAGS");
   var data = getTweets_(settings, doc);
   // if some data insert rows
   if (data.length>0){
@@ -43,10 +46,11 @@ function collectionRun(action) {
   }  
   var endTime = new Date();
   console.timeEnd(fnLabel);
-  var dur = (endTime.getTime()/1000-startTime.getTime()/1000).toFixed(3);
+  var dur = endTime.getTime()-startTime.getTime();
+  GATracking.addToGA({t: 'timing', utc:'TAGSAddon', utv:'runtime', utl:'collectionRun', utt: dur});
   //doc.toast("Time taken "+((endTime.getTime()/1000-startTime.getTime()/1000).toFixed(3))+"s", "TAGS");
-  putDocumentCache(fnLabel, {stage: 'finished',data:dur});
-  GATracking.addToGA({t: 'event', ec: 'TAGSAddon', ea: 'Data Collection', el: 'Tweets', ev:data.length});
+  putDocumentCache(fnLabel, {stage: 'finished',data:(dur/1000).toFixed(3)});
+  GATracking.addToGA({t: 'event', ec: 'TAGSAddon', ea: settings.endpoint, el: 'Tweets', ev:data.length});
   endTime = Utilities.formatDate(endTime, Session.getScriptTimeZone(), 'yyy-MM-dd HH:mm:ss');
   setDocProp_('last_run', endTime);
   GATracking.processGABatch();
@@ -197,7 +201,8 @@ function getDocumentCache(key){
  * @param {Object} value to Cache.
  */
 function putDocumentCache(key, value){
- CacheService.getDocumentCache().put(key, JSON.stringify(value), 2);
+  console.log('putDocumentCache', {key:key, value:value});
+  CacheService.getDocumentCache().put(key, JSON.stringify(value), 2);
 }
 
 /**
