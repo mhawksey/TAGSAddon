@@ -8,7 +8,7 @@ function flattenDataFast_(ob){
         for (u in ob.user){
           p['user_'+u] = ob.user[u];
         }
-        p['profile_image_url'] = ob.user.profile_image_url_https
+        p['profile_image_url'] = ob.user.profile_image_url_https;
         p['user_entities_str'] = JSON.stringify(ob.user.entities);
         p['from_user'] = ob.user.screen_name;
         p['from_user_id_str'] = ob.user.id_str;
@@ -35,6 +35,10 @@ function flattenDataFast_(ob){
         p['created_at'] = c.value
         p['time'] = new Date(c.value);
         p['entities_str'] = JSON.stringify(ob.entities);
+        p['entities_expanded_urls'] = (ob.entities.urls) ? keyGroup(ob.entities.urls,'expanded_url').join(',') : null;
+        p['entities_hashtags'] = (ob.entities.hastags) ? keyGroup(ob.entities.hastags,'text').join(',') : null;
+        p['entities_user_mentions'] = (ob.entities.user_mentions) ? keyGroup(ob.entities.user_mentions,'screen_name').join(',') : null;
+        p['entities_media'] = (ob.entities.media) ? keyGroup(ob.entities.media,'media_url_https').join(',') : null;
         break;
       default:
         p[c.key] = c.value
@@ -75,7 +79,29 @@ function validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel){
   }
 }
 
-
+function updateMetadataCursor(cursor){
+  var doc = SpreadsheetApp.getActiveSpreadsheet();
+  var settings = getDocProps_();
+  var requests = [{
+    updateDeveloperMetadata: {
+      dataFilters:[{
+        developerMetadataLookup: {
+          metadataId: settings.metadataId
+        }}],
+      developerMetadata:{
+        metadataValue:JSON.stringify({
+          writtenBy:Session.getActiveUser().getEmail(),
+          createdAt:new Date().getTime(),
+          endpoint: settings.endpoint,
+          cursor: cursor
+        })
+      },
+      fields:'metadataValue',
+    }
+  }];
+  var meta = Sheets.Spreadsheets.batchUpdate({requests:requests},doc.getId());
+  console.log({call: 'updateMetadataCursor', data: meta});
+}
 
 function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
   // if no metadata or sheet has changed
@@ -108,10 +134,10 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
     // if not a users import add an id_str column
     if (endpoint.dataPath !== 'users'){
       var cols_arr = settings.status_columns.split(',');
-      cols_arr.unshift('id_str');
     } else {
       var cols_arr = settings.users_columns.split(',');
     }
+    cols_arr.unshift('id_str');
     sheet.getRange(1, 1, 1, cols_arr.length).setValues([cols_arr]);
     // remove extra extra row/cols
     sheet.deleteColumns(cols_arr.length+1, sheet.getMaxColumns() - sheet.getLastColumn());
@@ -202,22 +228,22 @@ function deleteAllTriggers_(debug){
   setDocProp_('triggers','');
 }
 
-function setRowsData_(sheet, data){
+function setRowsData_(sheet, data, optStartRow){
+  var startRow = optStartRow || 2
  // these are the heads
   var heads = sheet.getDataRange()
                    .offset(0, 0, 1)
                    .getValues()[0];
   
-  var tr = [];  
-  // and the data
-  data.forEach (function (row) {
-    var td = [];
-    heads.forEach (function (d) {
-       td.push(row[d]);
+  sheet.insertRowsAfter(startRow-1, data.length);
+  
+  // convert object data into a 2d array 
+  var tr = data.map (function (row) {
+    return heads.map(function(cell){
+      return row[cell] || "";
     });
-    tr.push(td);
   });
-  sheet.getRange(2, 1, tr.length, tr[0].length).setValues(tr);
+  sheet.getRange(startRow, 1, tr.length, tr[0].length).setValues(tr);
 }
 
 
@@ -354,4 +380,30 @@ function removeEmpty_(obj) {
   });
   return obj;
 };
+
+
+//https://stackoverflow.com/a/9345181
+function postfixNum_(n,d){
+  x=(''+n).length,p=Math.pow,d=p(10,d)
+  x-=x%3
+  return Math.round(n*d/p(10,x))/d+" kMGTPE"[x/3]
+}
+
+function keyGroup(arr, key){
+  return arr.map(function(elem) {
+    return elem[key];
+  });
+}
+
+function handleError_(e, endpoint){
+  var error_str = e.message.match(/({.*})/);
+  if (error_str){
+    var err = JSON.parse(error_str[1]);
+    if (err.errors[0].code == 88){
+      testRate({filter:endpoint, error:err.errors[0].message});
+    }
+  } else {
+   Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name); 
+  }
+}
 

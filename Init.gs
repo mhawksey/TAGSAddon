@@ -3,7 +3,6 @@
  */
 
 var LANG = 'en';
-var GA_BATCH = [];
 
 /**
  * Adds a custom menu with items to show the sidebar and dialog.
@@ -21,9 +20,10 @@ function onOpen(e) {
     }
   }
   var utilMenu = ui.createMenu('Utilities')
-                   .addItem('Wipe Sheet', 'wipeArchive')
+                   .addItem('Wipe Sheet', 'wipeArchive');
+  
   if (getTwitterService_().hasAccess()){
-    utilMenu.addItem('Quota', 'testRate')
+    utilMenu.addItem('Quotas', 'testRate')
   }
   menu.addSubMenu(utilMenu);
   menu.addToUi();
@@ -80,6 +80,26 @@ function showSidebar_(pageName) {
 }
 
 /**
+* Show sidebar 
+* @param {string} pageName to show in sidebar 
+*/
+function showDialog_(pageName, options) {
+  var options = options || {};
+  var service = getTwitterService_();
+  var setting = getDocProps_();
+  var template = HtmlService.createTemplateFromFile(pageName);
+  template.email = Session.getEffectiveUser().getEmail();
+  template.isSignedIn = service.hasAccess();
+  template.page_title = pageName; 
+  template.page_url = SpreadsheetApp.getActive().getUrl();
+  template.options = JSON.stringify(options);
+  var page = template.evaluate()
+      .setTitle('TAGS - '+pageName)
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+  SpreadsheetApp.getUi().showModalDialog(page, pageName);
+}
+
+/**
 * Wipes the archive sheet apart from header row
 */
 function wipeArchive(){
@@ -99,10 +119,8 @@ function wipeArchive(){
 *
 * @return {Object} data of Twitter rates
 */
-function testRate(){
-  //var api_request = "application/rate_limit_status.json?resources=users,search,statuses";
-  var data = get("application/rate_limit_status", {'resources': 'users,search,statuses'});
-  Browser.msgBox(JSON.stringify(data));
+function testRate(options){
+  showDialog_('Quotas', options);
 }
 
 

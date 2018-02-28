@@ -30,18 +30,20 @@ function collectionRun(action) {
         break;
       }
     }
+    var startRow = 2;
   } else {
     settings.cursor = cursor;
+    var startRow = sheet.getLastRow()+1;
   }
   putDocumentCache(fnLabel, {stage: 'getting-data'});
   doc.toast("Getting data...", "TAGS");
   var data = getTweets_(settings, doc);
   // if some data insert rows
   if (data.length>0){
-    doc.toast("Inserting "+data.length+" tweets", "TAGS");
+    doc.toast("Inserting "+data.length+" rows", "TAGS");
     putDocumentCache(fnLabel, {stage: 'inserting-data',data:data.length});
-    sheet.insertRowsAfter(1, data.length);
-    setRowsData_(sheet, data);
+    //sheet.insertRowsAfter(1, data.length);
+    setRowsData_(sheet, data, startRow);
     sheet.getRange(2, 1, data.length, sheet.getMaxColumns()).setFontWeight(null);
   }  
   var endTime = new Date();
@@ -187,12 +189,68 @@ function getSettings(key, type, fieldType){
 }
 
 /**
+ * Get current rate quotas from Twitter.
+ * @return {Object} rate limits and renew times.
+ */
+function testRateLimit(options){
+  var options = options || {};
+  var endpoints = (options.filter) ? options.filter.split('/')[0] : 'search,statuses,friends,followers,favorites,lists';
+  var data = get("application/rate_limit_status", {'resources': endpoints});
+  var results = {}
+  if (data.resources){
+    var ends = endpoints.split(',');
+    var items = [];
+    for (key in ENDPOINTS){
+      var res_id = key.split('/')[0];
+      if (data.resources[res_id]){
+        var res = data.resources[res_id]['/'+key];
+        var now = new Date();
+        var renew = new Date(res.reset*1000);
+        var delta = Math.abs(renew - now)/1000;
+        var minutes = Math.floor(delta / 60) % 60;
+        var count = ENDPOINTS[key].params.count;
+        var quota = Math.min(res.limit*count,50000)
+        var hits_left = quota - (res.limit - res.remaining)*count
+        var perc = parseInt(hits_left/quota*100)
+        
+        items.push({endpoint:ENDPOINTS[key].label, 
+                    perc: perc,
+                    hits_left: postfixNum_(hits_left, 2),
+                    hits_renewed: minutes,
+                    data:res});
+      }
+    }
+    /*for (key in endpoints.split()){
+      //var res_id = key.split('/')[0];
+      return key
+      var res = data.resources[key];
+      
+      var now = new Date();
+      var renew = new Date(res.reset*1000);
+      var delta = Math.abs(renew - now)/1000;
+      var minutes = Math.floor(delta / 60) % 60;
+      var count = ENDPOINTS[key].params.count;
+      var quota = Math.min(res.limit*count,50000)
+      var hits_left = quota - (res.limit - res.remaining)*count
+      var perc = parseInt(hits_left/quota*100)
+      
+      items.push({endpoint:ENDPOINTS[key].label, 
+                  perc: perc,
+                  hits_left: postfixNum_(hits_left, 2),
+                  hits_renewed: minutes,
+                  data:res});
+    }*/
+    return {error: options.error, items: items}; 
+  }
+}
+
+/**
  * Get document cache.
  * @param {string} key of Cached object.
  * @return {Object} cached response.
  */
 function getDocumentCache(key){
- return JSON.parse(CacheService.getDocumentCache().get(key));
+ return JSON.parse(CacheService.getDocumentCache().get(key)) || false;
 }
 
 /**
@@ -202,7 +260,7 @@ function getDocumentCache(key){
  */
 function putDocumentCache(key, value){
   console.log('putDocumentCache', {key:key, value:value});
-  CacheService.getDocumentCache().put(key, JSON.stringify(value), 2);
+  CacheService.getDocumentCache().put(key, JSON.stringify(value), 5);
 }
 
 /**

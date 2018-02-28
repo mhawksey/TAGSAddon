@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <script>
+    var PAGE_TITLE = '<?= page_title ?>';
+    var PAGE_URL = '<?= page_url ?>';
+  </script>
+  <?!= Include.js(['GA']); ?>
+    <?!= Include.html(['import_material']); ?>
+</head>
+
+<body>
+  <div class="row progress transparent" id="loader">
+    <div class="col s12 indeterminate blue"></div>
+  </div>
+  <div class="row" id="container" style="display:none">
+    <div class="col s12">
+      <div id="info"></div>
+      <blockquote id="error"></blockquote>
+      <ul class="collection">
+      </ul>
+    </div>
+  </div>
+
+</body>
+<script>
+  var options = <?!= options ?>;
+</script>
+<script type="text/template" data-template="collection-item">
+          <li class="collection-item"><span class="title">${endpoint}</span>
+          <div class="progress">
+            <div class="determinate blue" style="width: ${perc}%"></div>
+          </div><span class="new badge blue" data-badge-caption="rows collectable">${hits_left}</span>
+          <div stlye="float:left"><i class="material-icons tiny">timer</i> Renewed in ${hits_renewed} minutes</div>
+        </li>
+</script>
+<script>
+// https://stackoverflow.com/a/39065147
+function render(props) {
+  return function(tok, i) {
+    return (i % 2) ? props[tok] : tok;
+  };
+}
+
+  $(function() {
+    var itemTpl = $('script[data-template="collection-item"]').text().split(/\$\{(.+?)\}/g);
+  
+    google.script.run.withSuccessHandler(displayQuota)
+      .testRateLimit(options);
+
+    function displayQuota(resp) {
+      console.log(resp);
+      $('.collection').append(resp.items.map(function(item) {
+        return itemTpl.map(render(item)).join('');
+      }));
+      if(resp.error){
+        $('#error').text(resp.error.message);
+      }
+      $('#loader').hide();
+      $('#container').show();
+      
+    }
+
+
+
+  });
+  
+</script>
+
+
+</html>

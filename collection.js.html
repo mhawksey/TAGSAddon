@@ -62,14 +62,21 @@
       $('.tooltipped').tooltip({
         delay: 100
       });
-      if ($(this).val() === 'search/tweets') {
-        $('#sec_limit_collection').removeClass('disabled');
+      if (endpoint.dataPath !== 'users') {
+        //$('#sec_limit_collection').removeClass('disabled');
         $('#sec_status_cols').removeClass('disabled');
         $('#sec_user_cols').addClass('disabled');
       } else {
-        $('#sec_limit_collection').addClass('disabled');
+        //$('#sec_limit_collection').addClass('disabled');
         $('#sec_status_cols').addClass('disabled');
         $('#sec_user_cols').removeClass('disabled');
+      }
+      if($(this).val() === 'search/tweets'){
+        $('#tw_period').prop("disabled", false);
+        $('select').material_select();
+      } else {
+        $('#tw_period').prop("disabled", true);
+        $('select').material_select();
       }
 
     });
@@ -123,11 +130,13 @@
       if (!this.form.checkValidity()) {
         $(this.form).find(':invalid').each(function(index, node) {
           if (index === 0) {
-            var label = $('label[for=' + node.id + ']')
-            console.log(label.attr('data-error'))
+            var label = $('label[for=' + node.id + ']');
+            console.log(label.attr('data-error'));
             var colapse = $(node).closest('.collapsible-body').closest('li');
             var idx = colapse.index();
+            console.log(idx);
             var curIdx = $('.collapsible li.active').index();
+            console.log(curIdx);
             if (curIdx !== idx) {
               $('.collapsible').collapsible('open', idx);
             }
@@ -138,13 +147,14 @@
         var type = $(e.currentTarget).prop("id");
         $('[id^=run_]').prop("disabled", true);
         $('#loader').show();
-        progressPolling();
+        
         if (type === 'run_auto') {
           google.script.run.withSuccessHandler(autoCollectSetupHandler)
             .autoCollectSetup($(e.currentTarget).find('span').text());
         } else {
           google.script.run.withSuccessHandler(collectionResultsHandler)
             .collectionRun();
+          progressPolling();
         }
       }
 
@@ -173,11 +183,10 @@
     }
 
     function collectionResultsHandler(resp) {
-      console.log(resp)
+      console.log(resp);
       if (resp.status === 'import') {
         resp.import = true;
         resp.status = 'importing';
-        progressPolling();
         google.script.run.withSuccessHandler(collectionResultsHandler)
           .collectionRun(result);
 
@@ -225,8 +234,10 @@
       interval = interval || 1000;
       progressPoller = setTimeout(function() {
         google.script.run.withSuccessHandler(function(at) {
+          var at = at || {stage:'unknown'};
+          console.log(at);
           var bar = $('#loader > div');
-          if (at == undefined || at.stage == 'finished') {
+          if (at.stage == 'finished') {
             clearTimeout(progressPoller);
             bar.removeClass('determinate');
             bar.addClass('indeterminate');

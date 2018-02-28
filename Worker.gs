@@ -45,7 +45,7 @@ function getTweets_(settings, doc) {
   
   // calculate number of pages
   var numTweets = parseInt(settings.tw_num_of_tweets);
-  var maxTweets = endpoint.rate_limit * queryParams.count;
+  var maxTweets = endpoint.max || endpoint.rate_limit * queryParams.count;
   if (numTweets > maxTweets)  numTweets = maxTweets;
   var maxPage = Math.ceil(numTweets/queryParams.count);
   
@@ -63,8 +63,9 @@ function getTweets_(settings, doc) {
       var response = get(settings.endpoint, queryParams);
       putDocumentCache('collectionRun', {stage: 'get-tweets',data:parseInt(page/maxPage*100)});
       if (response.message){
-        console.error("Error", response)
-        Browser.msgBox("Error", response.message, Browser.Buttons.OK);
+        console.error("Error", response);
+        handleError_(response, settings.endpoint);
+        //Browser.msgBox("Error", response.message, Browser.Buttons.OK);
         done = true;
       } else {
         if (endpoint.dataPath){
@@ -76,12 +77,23 @@ function getTweets_(settings, doc) {
         if (objLen>0){ // if data returned
           
           for (var i=0; i < objLen; i++){
+            //data.push(flatten(objects[i]));
             data.push(flattenDataFast_(objects[i]));
           }
           
           if (endpoint.dataPath === 'users'){
             queryParams.cursor = response.next_cursor_str;
+            if (queryParams.cursor === "0"){
+              done = true;
+              updateMetadataCursor("-1");
+            }
+            //updateMetadataCursor(queryParams.cursor);
           } else {
+            if(response.search_metadata !== undefined) {
+              if (response.search_metadata.max_id_str == objects[objLen-1]["id_str"]){
+                done = true;
+              }
+            }
             queryParams.max_id = objects[objects.length-1]["id_str"];
           }
 
@@ -91,14 +103,24 @@ function getTweets_(settings, doc) {
         }
         //doc.toast("Fetched "+data.length+" tweets", "TAGS");
         page ++;
-        if (page > maxPage) done = true; // if collected 16 pages (the max) break the loop
+        if (page > maxPage) {
+          if (queryParams.cursor){
+            updateMetadataCursor(queryParams.cursor);
+          }
+          done = true; // if collected max pages break the loop
+        }
       } 
     } //end of while loop
     GATracking.addToGA({t: 'event', ec: 'TAGSAddon', ea: settings.endpoint, el: 'Pages', ev:page});
     return removeDuplicates_(data,'id_str');
   } catch (e) {
+    console.log(queryParams);
+    if (queryParams.cursor){
+      updateMetadataCursor(queryParams.cursor);
+    }
+    handleError_(e, settings.endpoint);
     GATracking.addToGA({t: 'exception', exd: 'Line '+e.lineNumber+' '+e.message});
-    Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name);
+    //Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name);
     return data;
   }
 }
