@@ -72,11 +72,12 @@ function validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel){
       return setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel);
     }
   }
-  if (endpoint.dataPath !== 'users'){
-    return parseInt(id_str_col_idx);
-  } else {
-    return meta_cursor;
-  }
+  var meta_result = {id_str_col_idx: parseInt(id_str_col_idx)};
+  
+  if (endpoint.dataPath === 'users'){
+    meta_result.cursor = meta_cursor
+  } 
+  return meta_result;
 }
 
 function updateMetadataCursor(cursor){
@@ -163,7 +164,7 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
           writtenBy:Session.getActiveUser().getEmail(),
           createdAt:new Date().getTime(),
           endpoint: settings.endpoint,
-          cursor: -1
+          cursor: '-1'
         }),
         location:{  
           dimensionRange: {
@@ -400,7 +401,7 @@ function handleError_(e, endpoint){
   if (error_str){
     var err = JSON.parse(error_str[1]);
     if (err.errors[0].code == 88){
-      testRate({filter:endpoint, error:err.errors[0].message});
+      showQuota({filter:endpoint, error:err.errors[0].message});
     }
   } else {
    Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name); 

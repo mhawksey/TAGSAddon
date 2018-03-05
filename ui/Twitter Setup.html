@@ -7,8 +7,8 @@
     var PAGE_TITLE = '<?= page_title ?>';
     var PAGE_URL = '<?= page_url ?>';
   </script>
-  <?!= Include.js(['GA']); ?>
-  <?!= Include.html(['import_material']); ?>
+  <?!= Include.js(['ui/js/GA']); ?>
+  <?!= Include.html(['ui/css/import_material']); ?>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/intercom.js/0.1.4/intercom.min.js"></script>
 </head>
 
@@ -61,18 +61,18 @@
 
     </div>
           <div class="col s12 center-align">
-            <button class="action center-align" type="submit" id="signin" onmouseup="openTab()" ><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
-            <button class="center-align" type="submit" id="signout" onmouseup="disconnect()" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
+            <button class="action center-align" type="submit" id="signin" ><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
+            <button class="center-align" type="submit" id="signout" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
       </div>
     
   </div>
-  <?!= Include.html(['footer']); ?>
+  <?!= Include.html(['inc/footer']); ?>
 </body>
 <script>
   var isSignedIn = '<?= isSignedIn ?>' == 'true';
   var email = '<?= email ?>';
   var authUrl = '<?= authUrl ?>';
 </script>
-<?!= Include.gs(['i18n','helpers']); ?>
-<?!= Include.js(['twitter-setup']); ?>
+<?!= Include.gs(['inc/i18n','ui/js/helpers']); ?>
+<?!= Include.js(['ui/js/twitter-setup']); ?>
 </html>

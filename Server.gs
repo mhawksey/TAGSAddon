@@ -14,26 +14,38 @@ function collectionRun(action) {
     if(sheets[n].getSheetId()==settings.sheetId){break}
   }
   var sheet = sheets[n];
-  
-  var cursor = validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel);
+  var startRow = 2;
+  var meta = validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel);
+  var id_strs = sheet.getRange(2, meta.id_str_col_idx+1, settings.tw_num_of_tweets).getValues();
   
   if (endpoint.dataPath !== 'users'){
-    var id_str_col_idx = cursor || 0;
-    
     // getting data part
     var since_id = 0;
     // find first id_str value
-    var id_strs = sheet.getRange(2, id_str_col_idx+1, settings.tw_num_of_tweets).getValues();
+    
     for (r in id_strs){
       if (id_strs[r][0] !== ""){
         settings.since_id = id_strs[r][0];
         break;
       }
     }
-    var startRow = 2;
   } else {
-    settings.cursor = cursor;
-    var startRow = sheet.getLastRow()+1;
+    var existing_ids_sample = [];
+    // updating an existing user list 
+    for (r in id_strs){
+      if (id_strs[r][0] !== ""){
+        existing_ids_sample.push(id_strs[r][0]);
+      }
+      if (existing_ids_sample.length > 10){
+        break; 
+      }
+    }
+    settings.existing_ids_sample = existing_ids_sample; 
+    // building a complete list
+    settings.cursor = meta.cursor;
+    if (meta.cursor !== "-1"){
+      startRow = sheet.getLastRow()+1;
+    }
   }
   putDocumentCache(fnLabel, {stage: 'getting-data'});
   doc.toast("Getting data...", "TAGS");
@@ -64,7 +76,7 @@ function autoCollectSetup(action){
   var created_trigs = [];
   var fnLabel = 'autoCollectSetup';
   putDocumentCache(fnLabel, {stage: 'start'});
-  if (action == 'Stop'){
+  if (action === 'Stop'){
     deleteAllTriggers_();
     doc.toast("Auto-Collect stopped", "TAGS");
   } else {
@@ -74,7 +86,11 @@ function autoCollectSetup(action){
       deleteAllTriggers_();
     }
     // handle auto collect trigger setup
-    if (settings.update_frequency !== ''){
+    if (action === 'resume'){
+      // if resuming set to 15mins
+      setDocProp_('update_frequency','15mins');
+      settings.update_frequency = '15mins';
+    } else if (settings.update_frequency !== ''){
       // if no frequency set defualt to 1 hr
       setDocProp_('update_frequency','hourly');
       settings.update_frequency = 'hourly';
@@ -220,26 +236,6 @@ function testRateLimit(options){
                     data:res});
       }
     }
-    /*for (key in endpoints.split()){
-      //var res_id = key.split('/')[0];
-      return key
-      var res = data.resources[key];
-      
-      var now = new Date();
-      var renew = new Date(res.reset*1000);
-      var delta = Math.abs(renew - now)/1000;
-      var minutes = Math.floor(delta / 60) % 60;
-      var count = ENDPOINTS[key].params.count;
-      var quota = Math.min(res.limit*count,50000)
-      var hits_left = quota - (res.limit - res.remaining)*count
-      var perc = parseInt(hits_left/quota*100)
-      
-      items.push({endpoint:ENDPOINTS[key].label, 
-                  perc: perc,
-                  hits_left: postfixNum_(hits_left, 2),
-                  hits_renewed: minutes,
-                  data:res});
-    }*/
     return {error: options.error, items: items}; 
   }
 }

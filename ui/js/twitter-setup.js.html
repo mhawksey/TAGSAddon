@@ -1,24 +1,6 @@
 <script>
   script.settingsSave('user', 'setup');
 
-  window.openTab = function() {
-    $('#signin').prop("disabled", true);
-    $('#loader').show();
-    gtag('event', 'sign_up' { 'method' : 'Twitter' });
-    window.open(authUrl, target = "_blank");
-  };
-
-  window.disconnect = function() {
-    $('#signout').prop("disabled", true);
-    gtag('event', 'sign_out' { 'method' : 'Twitter' });
-    google.script.run.withSuccessHandler(function(url) {
-      authUrl = url;
-      $('#signin, #signout').toggle();
-      $('#signout').prop('disabled', false);
-      google.script.run.onOpen();
-    }).signOut()
-  }
-
   $(function() {
     // check if signed in
     if (isSignedIn) {
@@ -28,7 +10,28 @@
       $('#signin').show();
       $('#signout').hide();
     }
-  
+
+    $('#signin').on('click', function() {
+      $('#signin').prop("disabled", true);
+      $('#loader').show();
+      gtag('event', 'sign_up', {
+        'method': 'Twitter'
+      });
+      window.open(authUrl, target = "_blank");
+    });
+
+    $('#signout').on('click', function() {
+      $('#signout').prop("disabled", true);
+      gtag('event', 'sign_out', {
+        'method': 'Twitter'
+      });
+      google.script.run.withSuccessHandler(function(url) {
+        authUrl = url;
+        $('#signin, #signout').toggle();
+        $('#signout').prop('disabled', false);
+        google.script.run.onOpen();
+      }).signOut();
+    });
 
     // auth flow handler and listen for auth flow completion
     var intercom = Intercom.getInstance();
@@ -52,7 +55,5 @@
         }
       }
     });
-
-
   });
 </script>

@@ -145,7 +145,7 @@ function getTwitterService_() {
  * @param {Object} request The results of API auth request.
  */
 function authCallback(request) {
-  var template = HtmlService.createTemplateFromFile('Callback');
+  var template = HtmlService.createTemplateFromFile('ui/Callback');
   template.email = Session.getEffectiveUser().getEmail();
   template.isSignedIn = false;
   template.error = null;

@@ -66,10 +66,12 @@
         //$('#sec_limit_collection').removeClass('disabled');
         $('#sec_status_cols').removeClass('disabled');
         $('#sec_user_cols').addClass('disabled');
+        $('#sec_full_sheet').removeClass('disabled');
       } else {
         //$('#sec_limit_collection').addClass('disabled');
         $('#sec_status_cols').addClass('disabled');
         $('#sec_user_cols').removeClass('disabled');
+        $('#sec_full_sheet').addClass('disabled');
       }
       if($(this).val() === 'search/tweets'){
         $('#tw_period').prop("disabled", false);

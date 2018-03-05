@@ -6,11 +6,11 @@
     var PAGE_TITLE = '<?= page_title ?>';
     var PAGE_URL = '<?= page_url ?>';
   </script>
-  <?!= Include.js(['GA']); ?>
-  <?!= Include.html(['import_material']); ?>
+  <?!= Include.js(['ui/js/GA']); ?>
+  <?!= Include.html(['ui/css/import_material']); ?>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/ifvisible/1.0.6/ifvisible.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
-    <?!= Include.css(['select2-materialize']); ?>
+    <?!= Include.css(['ui/css/select2-materialize']); ?>
 </head>
 
 <body>
@@ -139,7 +139,7 @@
                     </div> -->
                   </div>
                 </li>
-                <li>
+                <li id="sec_full_sheet">
                   <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Full Sheet Options</div>
                   <div class="collapsible-body row">
                     <div class="col s12">
@@ -184,12 +184,12 @@
       </ul>
     </div>
   </div>
-  <?!= Include.html(['footer']); ?>
+  <?!= Include.html(['inc/footer']); ?>
 </body>
 <script>
   var use_default_cols = '<?= use_default_cols ?>' == 'true'; // default status_columns for archive
   var auto_collect = '<?= auto_collect ?>' == 'true'; // auto collect status
 </script>
-  <?!= Include.gs(['i18n','helpers','Settings']); ?>
-  <?!= Include.js(['collection']); ?>
+  <?!= Include.gs(['inc/i18n','ui/js/helpers','inc/Settings']); ?>
+  <?!= Include.js(['ui/js/collection']); ?>
 </html>

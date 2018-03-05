@@ -49,7 +49,6 @@ function getTweets_(settings, doc) {
   if (numTweets > maxTweets)  numTweets = maxTweets;
   var maxPage = Math.ceil(numTweets/queryParams.count);
   
-  
   var data = [];
   var idx = 0;
   try {
@@ -78,7 +77,14 @@ function getTweets_(settings, doc) {
           
           for (var i=0; i < objLen; i++){
             //data.push(flatten(objects[i]));
+            // if getting users and id_str already collected finish collection
+            if (endpoint.dataPath === 'users' && settings.existing_ids_sample.indexOf(objects[i].id_str) > -1){
+              done = true;
+              updateMetadataCursor("-1");
+              break;
+            }
             data.push(flattenDataFast_(objects[i]));
+            
           }
           
           if (endpoint.dataPath === 'users'){
@@ -106,6 +112,8 @@ function getTweets_(settings, doc) {
         if (page > maxPage) {
           if (queryParams.cursor){
             updateMetadataCursor(queryParams.cursor);
+            showQuota({filter:settings.endpoint, error:'Quota has been reached. Collection will automatically resume in 15 minutes'});
+            autoCollectSetup('resume');
           }
           done = true; // if collected max pages break the loop
         }

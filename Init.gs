@@ -23,7 +23,7 @@ function onOpen(e) {
                    .addItem('Wipe Sheet', 'wipeArchive');
   
   if (getTwitterService_().hasAccess()){
-    utilMenu.addItem('Quotas', 'testRate')
+    utilMenu.addItem('Quotas', 'showQuota')
   }
   menu.addSubMenu(utilMenu);
   menu.addToUi();
@@ -61,7 +61,7 @@ function showSidebarCollection() {
 function showSidebar_(pageName) {
   var service = getTwitterService_();
   var setting = getDocProps_();
-  var template = HtmlService.createTemplateFromFile(pageName);
+  var template = HtmlService.createTemplateFromFile('ui/'+pageName);
   template.email = Session.getEffectiveUser().getEmail();
   template.isSignedIn = service.hasAccess();
   if (!template.isSignedIn){ 
@@ -87,7 +87,7 @@ function showDialog_(pageName, options) {
   var options = options || {};
   var service = getTwitterService_();
   var setting = getDocProps_();
-  var template = HtmlService.createTemplateFromFile(pageName);
+  var template = HtmlService.createTemplateFromFile('ui/'+pageName);
   template.email = Session.getEffectiveUser().getEmail();
   template.isSignedIn = service.hasAccess();
   template.page_title = pageName; 
@@ -119,7 +119,7 @@ function wipeArchive(){
 *
 * @return {Object} data of Twitter rates
 */
-function testRate(options){
+function showQuota(options){
   showDialog_('Quotas', options);
 }
 
