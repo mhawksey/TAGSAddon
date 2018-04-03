@@ -8,8 +8,8 @@
     var PAGE_URL = '<?= page_url ?>';
   </script>
   <?!= Include.js(['ui/js/GA']); ?>
-  <?!= Include.html(['ui/css/import_material']); ?>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/intercom.js/0.1.4/intercom.min.js"></script>
+    <?!= Include.html(['ui/css/import_material']); ?>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/intercom.js/0.1.4/intercom.min.js"></script>
 </head>
 
 <body>
@@ -58,45 +58,46 @@
           <label for="consumer_secret">Consumer Secret</label>
         </div>
       </form>
-      
-            
-              <ul class="collapsible col s12" data-collapsible="accordion">
-                <li>
-                  <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Twitter Premium API</div>
-                  <div class="collapsible-body row">
-                  <div class="col s12">
-                  <p>Twitter's Premium search API is still in beta. The first premium offering is the Search Tweets API, which includes a 30-day endpoint and a full-archive endpoint. 
-                  Find out more about <a href="https://developer.twitter.com/en/apply-for-access">applying for Twitter Premium access</a>.<p>
+
+
+      <ul class="collapsible col s12" data-collapsible="accordion">
+        <li>
+          <div class="collapsible-header"><i class="material-icons right">keyboard_arrow_down</i>Twitter Premium API</div>
+          <div class="collapsible-body row">
+            <div class="col s12">
+              <p>Twitter's Premium search API is still in beta. The first premium offering is the Search Tweets API, which includes a 30-day endpoint and a full-archive endpoint. Find out more about <a href="https://developer.twitter.com/en/apply-for-access">applying for Twitter Premium access</a>.
+                <p>
                   <p>For Premium API access as well as provding a Consumer Key and Secret you need to provide a label and product below:
                   </p>
-                  </div>
-                        <form class="col s12">
-        <div class="input-field col s12">
-          <input id="premium_label" type="text" class="settings">
-          <label for="premium_label">Label</label>
-          <div style="margin-bottom:20px"><em>Case-sensitive label associated with <a href="https://developer.twitter.com/en/account/environments" target="_blank">your search developer environment</a></em></div>
-        </div>
-        <div class="input-field col s12">
-                      <select id="premium_product" class="settings">
+            </div>
+            <form class="col s12">
+              <div class="input-field col s12">
+                <input id="premium_label" type="text" class="settings">
+                <label for="premium_label">Label</label>
+                <div style="margin-bottom:20px"><em>Case-sensitive label associated with <a href="https://developer.twitter.com/en/account/environments" target="_blank">your search developer environment</a></em></div>
+              </div>
+              <div class="input-field col s12">
+                <select id="premium_product" class="settings">
                       <option value="" selected> </option>
                       <option value="30day">30 days</option>
                       <option value="fullarchive">Full Archive</option>
                     </select>
-                      <label for="premium_product">Twitter Premium Product</label>
-                    </div>
-      </form>
-                  </div>
-                </li>
-              </ul>
+                <label for="premium_product">Twitter Premium Product</label>
+              </div>
+            </form>
+          </div>
+        </li>
+      </ul>
 
-    
-          <div class="col s12 center-align">
-            <button class="action center-align" type="submit" id="signin" ><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
-            <button class="center-align" type="submit" id="signout" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
+
+
+
+    </div>
+    <div class="col s12 center-align">
+        <button class="action center-align" type="submit" id="signin"><?!= Include.img(icons['twitter_icon']); ?> Connect Twitter</button>
+        <button class="center-align" type="submit" id="signout" style="display:none"><?!= Include.img(icons['twitter_icon']); ?> Disconnect Twitter</button>
       </div>
-    
-  </div>
-  <?!= Include.html(['inc/footer']); ?>
+    <?!= Include.html(['inc/footer']); ?>
 </body>
 <script>
   var isSignedIn = '<?= isSignedIn ?>' == 'true';
@@ -104,5 +105,6 @@
   var authUrl = '<?= authUrl ?>';
 </script>
 <?!= Include.gs(['inc/i18n','ui/js/helpers']); ?>
-<?!= Include.js(['ui/js/twitter-setup']); ?>
+  <?!= Include.js(['ui/js/twitter-setup']); ?>
+
 </html>
