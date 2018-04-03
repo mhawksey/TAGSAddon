@@ -77,6 +77,7 @@ function getTweets_(settings, doc) {
     console.log({call: settings.endpoint, queryParams: queryParams});
     while(!done){
       var response = get(settings.endpoint, queryParams);
+      
       putDocumentCache('collectionRun', {stage: 'get-tweets',data:parseInt(page/maxPage*100)});
       if (response.message){
         console.error("Error", response);
@@ -144,7 +145,7 @@ function getTweets_(settings, doc) {
     GATracking.addToGA({t: 'event', ec: 'TAGSAddon', ea: settings.endpoint, el: 'Pages', ev:page});
     return removeDuplicates_(data,'id_str');
   } catch (e) {
-    console.log(queryParams);
+    console.log({call:'getTweets', data: response});
     if (queryParams.cursor || queryParams.next){
       updateMetadataCursor(queryParams.cursor || queryParams.next);
     }

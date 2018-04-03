@@ -36,7 +36,7 @@ var ENDPOINTS = {
       maxResults: 100,
       next: null
     }
-  },
+  },/*
   "tweets/search/:product/:label/counts":{
     label: 'Search term counts (Twitter Premium API)',
     placeholder: '#TAGS OR from:mhawksey',
@@ -50,11 +50,10 @@ var ENDPOINTS = {
       query: 'tw_input', // maximum 500 chars
       fromDate: null,
       toDate: null,
-      maxResults: 100,
       bucket: 'day',
       next: null
     }
-  },
+  },*/
   "favorites/list":{
     label: 'User likes',
     placeholder: 'mhawksey',

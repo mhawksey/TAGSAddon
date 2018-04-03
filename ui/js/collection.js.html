@@ -89,8 +89,7 @@
         $('#tw_period').prop("disabled", false);
         $('select').material_select();
       } else {
-        $('#tw_period').prop("disabled", true);
-        $('select').material_select();
+        $('#tw_period').prop("disabled", true);        
       }
       if($(this).val() === 'tweets/search/:product/:label' || $(this).val() === 'tweets/search/:product/:label/counts'){
         $('#pick_toDate').prop("disabled", false);
@@ -104,6 +103,7 @@
       } else {
         $('#premium_bucket').prop("disabled", true);
       }
+      $('select').material_select();
 
     });
 

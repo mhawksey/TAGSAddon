@@ -32,7 +32,7 @@ function flattenDataFast_(ob){
         }
         break;
       case 'created_at':
-        p['created_at'] = c.value
+        p['created_at'] = c.value;
         p['time'] = new Date(c.value);
         p['entities_str'] = JSON.stringify(ob.entities);
         p['entities_expanded_urls'] = (ob.entities.urls) ? keyGroup(ob.entities.urls,'expanded_url').join(',') : null;
@@ -40,6 +40,9 @@ function flattenDataFast_(ob){
         p['entities_user_mentions'] = (ob.entities.user_mentions) ? keyGroup(ob.entities.user_mentions,'screen_name').join(',') : null;
         p['entities_media'] = (ob.entities.media) ? keyGroup(ob.entities.media,'media_url_https').join(',') : null;
         break;
+      case 'timePeriod':
+        p['id_str'] = c.value;
+        p['time'] = new Date(c.value);
       default:
         p[c.key] = c.value
     }
@@ -131,15 +134,10 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
     // if not importing TAGS setup the archive sheet
     // created header
     
-    
-    // if not a users import add an id_str column
-    if (endpoint.dataPath !== 'users'){
-      var cols_arr = settings.status_columns.split(',');
-    } else {
-      var cols_arr = settings.users_columns.split(',');
-    }
-    cols_arr.unshift('id_str');
+    var cols_arr = getColumns_(endpoint, settings);
+
     sheet.getRange(1, 1, 1, cols_arr.length).setValues([cols_arr]);
+    console.log({call: 'insert Cols', data:cols_arr});
     // remove extra extra row/cols
     sheet.deleteColumns(cols_arr.length+1, sheet.getMaxColumns() - sheet.getLastColumn());
     sheet.deleteRows(2, sheet.getMaxRows()-2);
@@ -187,11 +185,7 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
   var heads = sheet.getDataRange()
                    .offset(0, 0, 1)
                    .getValues()[0];
-  var cols_arr = settings.status_columns.split(',');
-  // if not a users import add an id_str column
-  //if (endpoint.dataPath !== 'users'){
-    cols_arr.unshift('id_str');
-  //}
+  var cols_arr = getColumns_(endpoint, settings);
   var new_cols_arr = cols_arr.filter(function(val) {
     return heads.indexOf(val) == -1;
   });
@@ -200,6 +194,19 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
     formatSheet_(sheet);
   }
   return validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel);
+}
+
+function getColumns_(endpoint, settings){
+  // handle different columns
+  if (endpoint.params.bucket !== undefined){
+    var cols_arr = ['time', 'count'];
+  } else if (endpoint.dataPath !== 'users' && endpoint.params.bucket == undefined){
+    var cols_arr = settings.status_columns.split(',');
+  } else {
+    var cols_arr = settings.users_columns.split(',');
+  }
+  cols_arr.unshift('id_str');
+  return cols_arr;
 }
 
 function formatSheet_(sheet){
@@ -415,13 +422,16 @@ function keyGroup(arr, key){
 
 function handleError_(e, endpoint){
   var error_str = e.message.match(/({.*})/);
+  console.log(e)
   if (error_str){
     var err = JSON.parse(error_str[1]);
-    if (err.errors[0].code == 88){
+    if (err.errors && err.errors[0].code == 88){
       showQuota({filter:endpoint, error:err.errors[0].message});
+    } else {
+      Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name); 
     }
   } else {
-   Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name); 
+    Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name); 
   }
 }
 
