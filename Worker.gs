@@ -20,8 +20,9 @@ function getTweets_(settings, doc) {
     // handle everything else
     queryParams = queryParams.replace('tw_input', escapeSpecialChars_(settings.tw_input));
   }
-  queryParams = JSON.parse(queryParams); 
+  queryParams = JSON.parse(queryParams);
   
+
   queryParams.since_id = settings.since_id || null;
   queryParams.cursor = settings.cursor || null;
   
@@ -33,12 +34,27 @@ function getTweets_(settings, doc) {
     queryParams.until = twDate_(until);
   }
   
+  // handle premium access
+  if (settings.endpoint === 'tweets/search/:product/:label' || settings.endpoint === 'tweets/search/:product/:label/counts'){
+    var user_settings = getUserProps_();
+    settings.endpoint = settings.endpoint.replace(':product', user_settings.premium_product)
+                                         .replace(':label', user_settings.premium_label);
+    queryParams.next = settings.next || null;
+    queryParams.fromDate = twPremiumDate_(settings.fromDate);
+    queryParams.toDate = twPremiumDate_(settings.toDate);
+    
+    if (settings.endpoint === 'tweets/search/:product/:label/counts'){
+      queryParams.bucket = settings.premium_bucket || endpoint.bucket;
+    }
+  }
+  
   // add extra params to query
   if (settings.tw_adv_params){
     var extraParams = JSON.parse(settings.tw_adv_params);
     // https://stackoverflow.com/a/171256
     for (var a in extraParams) { queryParams[a] = extraParams[a]; }
   }
+  
   
   //stripe any blank queryParams
   queryParams = removeEmpty_(queryParams);
@@ -47,7 +63,8 @@ function getTweets_(settings, doc) {
   var numTweets = parseInt(settings.tw_num_of_tweets);
   var maxTweets = endpoint.max || endpoint.rate_limit * queryParams.count;
   if (numTweets > maxTweets)  numTweets = maxTweets;
-  var maxPage = Math.ceil(numTweets/queryParams.count);
+  var perPage = queryParams.count || queryParams.maxResults;
+  var maxPage = Math.ceil(numTweets/perPage);
   
   var data = [];
   var idx = 0;
@@ -84,7 +101,6 @@ function getTweets_(settings, doc) {
               break;
             }
             data.push(flattenDataFast_(objects[i]));
-            
           }
           
           if (endpoint.dataPath === 'users'){
@@ -94,6 +110,12 @@ function getTweets_(settings, doc) {
               updateMetadataCursor("-1");
             }
             //updateMetadataCursor(queryParams.cursor);
+          } else if (endpoint.dataPath === 'results') {
+            if (response.next){
+              queryParams.next = response.next;
+            } else {
+              done = true;
+            }
           } else {
             if(response.search_metadata !== undefined) {
               if (response.search_metadata.max_id_str == objects[objLen-1]["id_str"]){
@@ -114,7 +136,7 @@ function getTweets_(settings, doc) {
             updateMetadataCursor(queryParams.cursor);
             showQuota({filter:settings.endpoint, error:'Quota has been reached. Collection will automatically resume in 15 minutes'});
             autoCollectSetup('resume');
-          }
+          } 
           done = true; // if collected max pages break the loop
         }
       } 
@@ -123,11 +145,12 @@ function getTweets_(settings, doc) {
     return removeDuplicates_(data,'id_str');
   } catch (e) {
     console.log(queryParams);
-    if (queryParams.cursor){
-      updateMetadataCursor(queryParams.cursor);
+    if (queryParams.cursor || queryParams.next){
+      updateMetadataCursor(queryParams.cursor || queryParams.next);
     }
     handleError_(e, settings.endpoint);
     GATracking.addToGA({t: 'exception', exd: 'Line '+e.lineNumber+' '+e.message});
+    GATracking.processGABatch();
     //Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name);
     return data;
   }
@@ -141,4 +164,16 @@ function getTweets_(settings, doc) {
 */
 function twDate_(aDate){
   return Utilities.formatDate(aDate, Session.getScriptTimeZone(), "yyyy-MM-dd");
+}
+
+/**
+* Formats unix date for Twiiter Premium API call.
+*
+* @param {string} unix_date to convert
+* @return {string} Formatted date 
+*/
+function twPremiumDate_(unix_date){
+ return Utilities.formatDate(new Date(parseInt(unix_date)), 
+                                                Session.getScriptTimeZone(),
+                                                'yyyyMMddhhmm')  || null; 
 }

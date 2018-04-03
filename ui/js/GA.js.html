@@ -1,14 +1,20 @@
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-48225260-5"></script>
 <script>
-  if (navigator.doNotTrack && navigator.doNotTrack === 1) {
+  // Respect do not track for all browsers. Except for IE 10 and 11 where we ignore it
+  // https://hjnilsson.com/2015/11/30/setting-up-dnt/
+  var dnt_isIe10or11 = (navigator.appVersion.indexOf("MSIE 10") !== -1) || (navigator.userAgent.indexOf("Trident") !== -1 && navigator.userAgent.indexOf("rv:11") !== -1);
+  var DNT = (navigator.doNotTrack || navigator.msDoNotTrack || window.doNotTrack);
+  DNT = !DNT || DNT == "unspecified" || DNT == "0" ? false : true;
+  if (!DNT || dnt_isIe10or11) {
+    // do track
+    google.script.run.expose('GATracking','setNoTrackingPref', '' );
+  } else {
+    // don't track
     window['ga-disable-UA-48225260-5'] = true;
     google.script.run.expose('GATracking','setNoTrackingPref', true );
-    //google.script.run.trackingOptOut();
-  } else {
-    google.script.run.expose('GATracking','setNoTrackingPref', '' );
   }
-
+  
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());

@@ -16,7 +16,7 @@ var FORMAT = 'json';
 */
 function get(url, parameters) {
   var parameters = parameters || {};
-  parameters.tweet_mode = 'extended';
+  //parameters.tweet_mode = 'extended';
   var url = buildUrl_(url, parameters);
   return request_(url, 'GET');
 }
@@ -173,7 +173,7 @@ function getAuthorizationUrl() {
   try {
     return getTwitterService_().authorize();
   } catch(e){
-    return false; 
+    throw (e); 
   }
 }
 

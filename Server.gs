@@ -18,17 +18,20 @@ function collectionRun(action) {
   var meta = validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel);
   var id_strs = sheet.getRange(2, meta.id_str_col_idx+1, settings.tw_num_of_tweets).getValues();
   
-  if (endpoint.dataPath !== 'users'){
+  
+  if (endpoint.dataPath !== 'users' && endpoint.dataPath !== 'results'){
     // getting data part
     var since_id = 0;
     // find first id_str value
-    
     for (r in id_strs){
       if (id_strs[r][0] !== ""){
         settings.since_id = id_strs[r][0];
         break;
       }
     }
+  } else if (endpoint.dataPath !== 'results') {
+    // premium api 
+    settings.next = meta.cursor;
   } else {
     var existing_ids_sample = [];
     // updating an existing user list 
@@ -52,6 +55,16 @@ function collectionRun(action) {
   var data = getTweets_(settings, doc);
   // if some data insert rows
   if (data.length>0){
+    // if auto export copy existing data to other sheet
+    if (endpoint.dataPath !== 'users' && settings.auto_export && (sheet.getLastRow() + data.length) > parseInt(settings.auto_export_num)*1000){
+      doc.toast("Exporting existing data to insert "+data.length+" rows", "TAGS - Full Sheet");
+      var name = doc.getName() + ' Export ' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd');
+      
+      var newDoc = SpreadsheetApp.create(name, sheet.getMaxRows(), sheet.getLastColumn());
+      sheet.copyTo(newDoc);
+      newDoc.deleteSheet(newDoc.getSheets()[0])
+      sheet.deleteRows(2, sheet.getLastRow()-1);
+    }
     doc.toast("Inserting "+data.length+" rows", "TAGS");
     putDocumentCache(fnLabel, {stage: 'inserting-data',data:data.length});
     //sheet.insertRowsAfter(1, data.length);
@@ -202,6 +215,22 @@ function getSettings(key, type, fieldType){
   return {id: key, 
           value: value || "",
           type: fieldType};
+}
+
+/**
+ * Get settings for index.html.
+ * @param {string} type of Properties Service.
+ * @param {Object} settings.
+ */
+function getAllSettings(type){
+  switch (type){
+    case 'doc':
+      return getDocProps_();
+      break;
+    case 'user':
+      return getUserProps_();
+      break;
+  }
 }
 
 /**

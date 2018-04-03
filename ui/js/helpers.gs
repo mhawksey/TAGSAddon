@@ -1,9 +1,9 @@
 var SETTINGS_COUNT = 0;
-var script = {};
+var Script = {};
 
-script.i18n = {};
+Script.i18n = {};
 
-script.i18n.getMessage = function(msg, optLang){
+Script.i18n.getMessage = function(msg, optLang){
   var lang = optLang || "en";
   return i18n[msg][lang];
 }
@@ -12,11 +12,11 @@ script.i18n.getMessage = function(msg, optLang){
  * Retrieves internationalized messages and loads them into the UI.
  * @private
  */
-script.fillMessages_ = function(optLang) {
+Script.fillMessages_ = function(optLang) {
   var lang = optLang || 'en';
   // Load internationalized messages.
   $('.i18n').each(function() {
-    var i18nText = script.i18n.getMessage($(this).attr('data-msg').toString(), lang);
+    var i18nText = Script.i18n.getMessage($(this).attr('data-msg').toString(), lang);
     if ($(this).prop('tagName') == 'IMG') {
       $(this).attr({'title': i18nText});
     } else {
@@ -25,12 +25,13 @@ script.fillMessages_ = function(optLang) {
   });
 };
 
-script.settingsSave = function(type, context) {
+Script.settingsSave = function(type, context) {
   $('.settings').each(function(index) {
       var elType = this.type || this.tagName.toLowerCase();
-      google.script.run.withSuccessHandler(script.handleSettings)
+    
+      /*google.script.run.withSuccessHandler(Script.handleSettings)
         .getSettings($(this).attr('id'), type, elType);
-      SETTINGS_COUNT++;
+      SETTINGS_COUNT++;*/
 
       // handle on change 
       $(this).on('propertychange change click keyup input paste', function(e) {
@@ -43,13 +44,13 @@ script.settingsSave = function(type, context) {
         setObj[$(this).attr('id')] = val;
         google.script.run.storeSettings(setObj, type);
         if (context === 'setup'){
-          script.doKeySecretHandling();
+          Script.doKeySecretHandling();
         }
       });  
     });
 }
 
-script.doKeySecretHandling = function(){
+Script.doKeySecretHandling = function(){
   // key/secret handling
       //$('#signin').prop("disabled", false);
       if ($('#consumer_key').val() !== "" && $('#consumer_secret').val() !== "") {
@@ -64,65 +65,72 @@ script.doKeySecretHandling = function(){
           $('#signin').prop("disabled", true);
         }
 }
+Script.init = function(type, context){
+  google.script.run.withSuccessHandler(Script.handleAllSettings)
+        .getAllSettings(type);
+  Script.settingsSave(type, context);
+}
 
-
-script.handleSettings = function(setting) {
-  console.log(setting);
-  SETTINGS_COUNT--;
-  //if (setting.value !== '') {
-    switch (setting.type) {
-      case 'select-one':
-        if (setting.value){
-          $('#' + setting.id + ' option[value="' + setting.value + '"]').prop('selected', 'selected');
-          $('select').material_select();
-          if (setting.id === 'endpoint'){
-            $('#endpoint').trigger('change');
+Script.handleAllSettings = function(settings) {
+  console.log('Loading settings...');
+      var $input = $('[id^=pick_]').pickadate({
+            selectMonths: true, // Creates a dropdown to control month
+            selectYears: 15, // Creates a dropdown of 15 years to control year,
+            today: false,
+            clear: 'Clear',
+            close: 'Ok',
+            closeOnSelect: true, // Close upon selecting a date,
+            onSet: function(val) {
+              var hiddenFieldName = this.$node[0].id.replace('pick_',''); 
+              $('#'+hiddenFieldName).val(val.select || '')
+                                    .trigger('change');
+            }
+          });
+  Object.keys(settings).map(function(el){
+    var input = $('#'+el+'.settings');
+    if (input.length){
+      var field = $('#' + el);
+      var fieldType = field[0].type || field[0].tagName.toLowerCase();
+      var fieldValue = settings[el];
+      console.log({field: el, fieldType:fieldType, value:fieldValue});
+      switch (fieldType) {
+        case 'select-one':
+          if (fieldValue){
+            $('#' + el + ' option[value="' + fieldValue + '"]').prop('selected', 'selected');
+            $('select').material_select();
+            if (el === 'endpoint'){
+              $('#endpoint').trigger('change');
+            }
           }
-        }
-        break;
-      case 'text':
-        $('#' + setting.id).val(setting.value);
-        break;
-      case 'hidden':
-        $('#' + setting.id).val(setting.value);
-        // date/time pickers
-        var $input = $('#' + setting.id + '_in').pickadate({
-          selectMonths: true, // Creates a dropdown to control month
-          selectYears: 15, // Creates a dropdown of 15 years to control year,
-          today: false,
-          clear: 'Clear',
-          close: 'Ok',
-          closeOnSelect: true, // Close upon selecting a date,
-          onSet: function(val) {
-            $('#' + setting.id).val(val.select || '')
-                               .trigger('change');
+          break;
+        case 'text':
+          field.val(fieldValue);
+          break;
+        case 'hidden':
+          field.val(fieldValue);
+          
+          if (fieldValue){
+            // Use the picker object directly.
+            var picker = $('#pick_'+el).pickadate('picker');
+            picker.set('select', parseInt(fieldValue));
           }
-        });
-        if (setting.value){
-          // Use the picker object directly.
-          var picker = $input.pickadate('picker');
-          picker.set('select', parseInt(setting.value));
-        }
-        break;
-      case 'range':
-        $('#' + setting.id).val(setting.value);
-        break;
-      case 'select-multiple':
-        $('#' + setting.id).val(setting.value.split(',')).trigger("change");
-        break;
-      case 'checkbox':
-        //if (setting.value === 'true'){
-          $('#' + setting.id).prop('checked', (setting.value == 'true'));
-        //}
-    }
-  //}
+          break;
+        case 'range':
+          field.val(fieldValue);
+          break;
+        case 'select-multiple':
+          field.val(fieldValue.split(',')).trigger("change");
+          break;
+        case 'checkbox':
+          field.prop('checked', (fieldValue == 'true'));
+      }
+      
+    }  
+  });
   Materialize.updateTextFields();
-  //script.doKeySecretHandling();
-  if (SETTINGS_COUNT === 0){
-    $('#loader').hide();
-    $('#container').show();
-    $('ul.tabs').tabs();
-  }
+  $('#loader').hide();
+  $('#container').show();
+  $('ul.tabs').tabs();
 }
 
 // http://ramblings.mcpher.com/Home/excelquirks/gassnips/exposeserver
@@ -134,5 +142,6 @@ function expose (namespace , method) {
 // Are we running in the context of the Options page? Or is this file being included so that
 // the client can set and get options?
 if (typeof jQuery !== 'undefined') {
-  script.fillMessages_();
+  Script.fillMessages_();
+  //Script.init();
 }

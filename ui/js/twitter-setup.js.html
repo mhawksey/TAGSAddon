@@ -1,7 +1,8 @@
 <script>
-  script.settingsSave('user', 'setup');
+  Script.init('user', 'setup');
 
   $(function() {
+    $('select').material_select();
     // check if signed in
     if (isSignedIn) {
       $('#signin').hide();

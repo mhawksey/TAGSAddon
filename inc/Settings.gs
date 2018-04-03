@@ -16,7 +16,43 @@ var ENDPOINTS = {
       until: null,
       since_id: null,
       max_id: null,
-      include_entities: true
+      include_entities: true,
+      tweet_mode: 'extended'
+    }
+  },
+  "tweets/search/:product/:label":{
+    label: 'Search term (Twitter Premium API)',
+    placeholder: '#TAGS OR from:mhawksey',
+    tooltip: 'Enter a search term ',
+    url: 'https://developer.twitter.com/en/docs/tweets/search/api-reference/premium-search',
+    rate_limit: 30,
+    refresh_win: 1,
+    dataPath: 'results',
+    disabled: true,
+    params: { 
+      query: 'tw_input', // maximum 500 chars
+      fromDate: null,
+      toDate: null,
+      maxResults: 100,
+      next: null
+    }
+  },
+  "tweets/search/:product/:label/counts":{
+    label: 'Search term counts (Twitter Premium API)',
+    placeholder: '#TAGS OR from:mhawksey',
+    tooltip: 'Enter a search term ',
+    url: 'https://developer.twitter.com/en/docs/tweets/search/api-reference/premium-search',
+    rate_limit: 30,
+    refresh_win: 1,
+    dataPath: 'results',
+    disabled: true,
+    params: { 
+      query: 'tw_input', // maximum 500 chars
+      fromDate: null,
+      toDate: null,
+      maxResults: 100,
+      bucket: 'day',
+      next: null
     }
   },
   "favorites/list":{
@@ -32,7 +68,8 @@ var ENDPOINTS = {
       count: 200,
       since_id: null,
       max_id: null,
-      include_entities: true
+      include_entities: true,
+      tweet_mode: 'extended'
     }
   },
   "followers/list":{
@@ -49,7 +86,8 @@ var ENDPOINTS = {
       screen_name: 'tw_input',
       cursor: -1,
       count: 200,
-      include_user_entities: true
+      include_user_entities: true,
+      tweet_mode: 'extended'
     }
   },
   "friends/list":{
@@ -66,7 +104,8 @@ var ENDPOINTS = {
       screen_name: 'tw_input',
       cursor: -1,
       count: 200,
-      include_user_entities: true
+      include_user_entities: true,
+      tweet_mode: 'extended'
     }
   },
   "lists/members":{
@@ -84,7 +123,8 @@ var ENDPOINTS = {
       slug: 'tw_input_parse_slug',
       cursor: -1,
       count: 5000,
-      include_entities: true
+      include_entities: true,
+      tweet_mode: 'extended'
     }
   },
   "lists/statuses":{
@@ -101,7 +141,8 @@ var ENDPOINTS = {
       since_id: null,
       max_id: null,
       count: 5000, // ? not documented 
-      include_entities: true
+      include_entities: true,
+      tweet_mode: 'extended'
     }
   },
   "statuses/user_timeline":{
@@ -118,7 +159,8 @@ var ENDPOINTS = {
       since_id: null,
       max_id: null,
       count: 200,
-      include_entities: true
+      include_entities: true,
+      tweet_mode: 'extended'
     }
   }
 }

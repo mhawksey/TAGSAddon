@@ -6,13 +6,15 @@
     poll();
     var SHEETS = {};
     var DEFAULT_COLS = {};
-    script.settingsSave('doc', 'collect');
+    Script.init('doc', 'collect');
 
     getSheets(); // populate sheets select
 
     // Collection submit button setup
     autoScheduleButtonHandler(auto_collect);
     google.script.run.withSuccessHandler(setLastRunTooltipHandler).lastRun();
+    
+
 
     // data range mod for sheet export value
     $('#auto_export_num').on("change click input", function(e) {
@@ -48,10 +50,12 @@
     // setup different data collection types
     var endpoint_select = $('#endpoint');
     $.each(ENDPOINTS, function(idx) {
-      endpoint_select.append($('<option>', {
-          value: idx
-        })
-        .text(ENDPOINTS[idx].label))
+      var op = endpoint_select.append($("<option></option>")
+                    .attr("value",idx)
+                    .text(ENDPOINTS[idx].label));
+      if (ENDPOINTS[idx].disabled && !hasPremium){
+        op.find('option:last').attr("disabled", "disabled");
+      }
     });
 
     endpoint_select.on('change', function(e) {
@@ -64,14 +68,22 @@
       });
       if (endpoint.dataPath !== 'users') {
         //$('#sec_limit_collection').removeClass('disabled');
-        $('#sec_status_cols').removeClass('disabled');
+        /*$('#sec_status_cols').removeClass('disabled');
         $('#sec_user_cols').addClass('disabled');
-        $('#sec_full_sheet').removeClass('disabled');
+        $('#sec_full_sheet').removeClass('disabled');*/
+        $('#sec_status_cols').show(500);
+        $('#sec_user_cols').hide(500);
+        $('#sec_full_sheet').show(500);
+        $('#sec_limit_collection').show(500);
       } else {
         //$('#sec_limit_collection').addClass('disabled');
-        $('#sec_status_cols').addClass('disabled');
+        /*$('#sec_status_cols').addClass('disabled');
         $('#sec_user_cols').removeClass('disabled');
-        $('#sec_full_sheet').addClass('disabled');
+        $('#sec_full_sheet').addClass('disabled');*/
+        $('#sec_status_cols').hide(500);
+        $('#sec_user_cols').show(500);
+        $('#sec_full_sheet').hide(500);
+        $('#sec_limit_collection').hide(500);
       }
       if($(this).val() === 'search/tweets'){
         $('#tw_period').prop("disabled", false);
@@ -79,6 +91,18 @@
       } else {
         $('#tw_period').prop("disabled", true);
         $('select').material_select();
+      }
+      if($(this).val() === 'tweets/search/:product/:label' || $(this).val() === 'tweets/search/:product/:label/counts'){
+        $('#pick_toDate').prop("disabled", false);
+        $('#pick_fromDate').prop("disabled", false);
+      } else {
+        $('#pick_toDate').prop("disabled", true);
+        $('#pick_fromDate').prop("disabled", true);
+      }
+      if ($(this).val() === 'tweets/search/:product/:label/counts'){
+        $('#premium_bucket').prop("disabled", false);
+      } else {
+        $('#premium_bucket').prop("disabled", true);
       }
 
     });
@@ -236,7 +260,7 @@
       interval = interval || 1000;
       progressPoller = setTimeout(function() {
         google.script.run.withSuccessHandler(function(at) {
-          var at = at || {stage:'unknown'};
+          //var at = at || {stage:'unknown'};
           console.log(at);
           var bar = $('#loader > div');
           if (at.stage == 'finished') {

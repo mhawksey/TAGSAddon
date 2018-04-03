@@ -13,7 +13,7 @@ function flattenDataFast_(ob){
         p['from_user'] = ob.user.screen_name;
         p['from_user_id_str'] = ob.user.id_str;
         p['status_url'] = 'http://twitter.com/'+ob.user.screen_name+"/statuses/"+ob.id_str;
-        p['user_url'] = (ob.user.entities.url) ? ob.user.entities.url.urls[0] : null;
+        p['user_url'] = (ob.user.entities && ob.user.entities.url) ? ob.user.entities.url.urls[0] : null;
         break;
       case 'metadata':
         for (m in ob.metadata){
@@ -189,9 +189,9 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
                    .getValues()[0];
   var cols_arr = settings.status_columns.split(',');
   // if not a users import add an id_str column
-  if (endpoint.dataPath !== 'users'){
+  //if (endpoint.dataPath !== 'users'){
     cols_arr.unshift('id_str');
-  }
+  //}
   var new_cols_arr = cols_arr.filter(function(val) {
     return heads.indexOf(val) == -1;
   });
@@ -199,7 +199,7 @@ function setupArchiveSheet_(doc, sheet, settings, endpoint, action, fnLabel){
     sheet.getRange(1, sheet.getLastColumn()+1, 1, new_cols_arr.length).setValues([new_cols_arr]);
     formatSheet_(sheet);
   }
-  validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel);
+  return validSheetMetadata_(doc, sheet, settings, endpoint, action, fnLabel);
 }
 
 function formatSheet_(sheet){
@@ -294,6 +294,9 @@ function setDocProp_(key, value){
 function setUserProp_(key, value){
   PropertiesService.getUserProperties().setProperty(key, value);
   CacheService.getUserCache().put(key, value, 86400);
+  CacheService.getUserCache().put('ALL', 
+                                      JSON.stringify(PropertiesService.getUserProperties().getProperties()), 
+                                      86400);
 }
 
 /**
@@ -335,6 +338,20 @@ function getUserProp_(key){
     var value = PropertiesService.getUserProperties().getProperty(key);
     CacheService.getUserCache().put(key, value, 86400);
   }
+  return value;
+}
+
+/**
+ * Gets all static user properties, using caching.
+ * @returns {Object} The property values.
+ */
+function getUserProps_(){
+  var value = JSON.parse(CacheService.getUserCache().get('ALL'));
+  if (!value){
+    var value = PropertiesService.getUserProperties().getProperties();
+    CacheService.getUserCache().put('ALL', JSON.stringify(value), 86400);
+  }
+  console.log({getUserProps: 'ALL-cache', value: value});
   return value;
 }
 
@@ -406,5 +423,15 @@ function handleError_(e, endpoint){
   } else {
    Browser.msgBox("Line "+e.lineNumber+" "+e.message+e.name); 
   }
+}
+
+function getHashedEmail_(){
+  // based on https://stackoverflow.com/a/27933459
+  var signature = Utilities.computeHmacSha256Signature(Session.getEffectiveUser().getEmail(),
+                                                       "my key - use a stronger one").reduce(function(str,chr){
+    chr = (chr < 0 ? chr + 256 : chr).toString(16);
+    return str + (chr.length==1?'0':'') + chr;
+  },'');
+  return signature; 
 }
 

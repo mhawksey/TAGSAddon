@@ -80,6 +80,26 @@
                     </select>
                       <label for="tw_period">Days</label>
                     </div>
+                    <div id="premium_dates">
+                    <div class=" col s12">
+                      <label for="pick_fromDate">From date</label>
+                      <input type="text" id="pick_fromDate">
+                      <input type="hidden" id="fromDate" class="settings">
+                    </div>
+                    <div class=" col s12">
+                      <label for="pick_toDate">To date</label>
+                      <input type="text" id="pick_toDate">
+                      <input type="hidden" id="toDate" class="settings">
+                    </div>
+                    <div class="input-field col s12">
+                      <select id="premium_bucket" class="settings">
+                      <option value="day">day</option>
+                      <option value="hour">hour</option>
+                      <option value="minute">minute</option>
+                    </select>
+                      <label for="premium_bucket">Count bucket</label>
+                    </div>
+                    </div>
                   </div>
                 </li>
                 <li id="sec_status_cols">
@@ -100,7 +120,7 @@
                       <label for="users_columns">Select data columns </label>
                       <div id="users_columns_reset">(<a>defaults</a>)</div>
                       <select multiple="multiple" id="users_columns" class="settings"></select>
-                      <p><em></em></p>
+                      <p><em>Note: New columns added after collection has started will not be populated with data. <code>id_str</code> is a required column and is added automatically</em></p>
                     </div>
                   </div>
                 </li>
@@ -128,8 +148,8 @@
                     </select>
                     </div>
                     <div class=" col s12">
-                      <label for="end_collect_date_in">Stop Auto-Collect Date (leave blank for continuous collection)</label>
-                      <input type="text" id="end_collect_date_in">
+                      <label for="pick_end_collect_date">Stop Auto-Collect Date (leave blank for continuous collection)</label>
+                      <input type="text" id="pick_end_collect_date">
                       <input type="hidden" id="end_collect_date" class="settings">
                     </div>
                     <!-- <div class=" col s12">
@@ -150,7 +170,7 @@
                     <div class="col s12">
                       <label for="auto_export_num">Number of rows before export</label>
                       <p class="range-field">
-                        <input type="range" id="auto_export_num" min="10" max="100" step="1" class="settings" value="30" class="settings" />
+                        <input type="range" id="auto_export_num" min="20" max="120" step="1" class="settings" value="90" class="settings" />
                       </p>
                       <p><em>Note: Google Sheets currently has a 2 million cell limit. Enabling this option will batch export data. An email notifcation will be sent when data is exported. Only the archive sheet will be exported</em></p>
                     </div>
@@ -189,6 +209,7 @@
 <script>
   var use_default_cols = '<?= use_default_cols ?>' == 'true'; // default status_columns for archive
   var auto_collect = '<?= auto_collect ?>' == 'true'; // auto collect status
+  var hasPremium = '<?= hasPremium ?>' == 'true';
 </script>
   <?!= Include.gs(['inc/i18n','ui/js/helpers','inc/Settings']); ?>
   <?!= Include.js(['ui/js/collection']); ?>

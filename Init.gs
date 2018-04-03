@@ -1,7 +1,3 @@
-/**
- * @OnlyCurrentDoc
- */
-
 var LANG = 'en';
 
 /**
@@ -13,10 +9,10 @@ function onOpen(e) {
   var ui = SpreadsheetApp.getUi();
   var menu = ui.createAddonMenu();
   if (e && e.authMode !== ScriptApp.AuthMode.NONE) {
-    GATracking.init('UA-48225260-5');
-    menu.addItem(script.i18n.getMessage('Setup Twitter', LANG), 'showSidebarSetup');
+    GATracking.init('UA-48225260-5', Session.getTemporaryActiveUserKey());
+    menu.addItem(Script.i18n.getMessage('Setup Twitter', LANG), 'showSidebarSetup');
     if (getTwitterService_().hasAccess()){
-      menu.addItem(script.i18n.getMessage('Collection', LANG), 'showSidebarCollection');
+      menu.addItem(Script.i18n.getMessage('Collection', LANG), 'showSidebarCollection');
     }
   }
   var utilMenu = ui.createMenu('Utilities')
@@ -64,6 +60,7 @@ function showSidebar_(pageName) {
   var template = HtmlService.createTemplateFromFile('ui/'+pageName);
   template.email = Session.getEffectiveUser().getEmail();
   template.isSignedIn = service.hasAccess();
+  template.hasPremium = (getUserProp_('premium_label') && getUserProp_('premium_product')) ? true : false;
   if (!template.isSignedIn){ 
     template.authUrl = getAuthorizationUrl();
   } else {

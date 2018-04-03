@@ -56,7 +56,7 @@ function render(props) {
         return itemTpl.map(render(item)).join('');
       }));
       if(resp.error){
-        $('#error').text(resp.error.message);
+        $('#error').text(resp.error);
       }
       $('#loader').hide();
       $('#container').show();
